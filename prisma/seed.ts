@@ -254,6 +254,7 @@ async function main() {
         lastName: "Wiśniewski",
       },
     ],
+    skipDuplicates: true,
   })
 
   console.log("Created parent contacts")
@@ -282,6 +283,7 @@ async function main() {
         classId: class_.id,
       },
     ],
+    skipDuplicates: true,
   })
 
   console.log("Created teacher assignments")
@@ -312,6 +314,7 @@ async function main() {
         teacherId: nauczyciel1.id,
       },
     ],
+    skipDuplicates: true,
   })
 
   console.log("Created sample grades")

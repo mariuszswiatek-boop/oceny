@@ -92,8 +92,7 @@ Po uruchomieniu seed, możesz zalogować się używając następujących kont:
 
 ### Wychowawca
 - **Email**: `wychowawca@szkola.pl`
-- **Hasło**: `next dev
-`
+- **Hasło**: `password123`
 - **Rola**: WYCHOWAWCA
 
 ### Nauczyciel 1
