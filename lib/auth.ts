@@ -4,6 +4,7 @@ import { prisma } from "./prisma"
 import bcrypt from "bcryptjs"
 import { UserRole } from "@prisma/client"
 import { appendFileSync } from "fs"
+import { z } from "zod"
 
 // #region agent log
 try { appendFileSync('/Users/mariuszswiatek/oceny/.cursor/debug.log', JSON.stringify({location:'lib/auth.ts:7',message:'Loading authOptions, importing prisma',data:{timestamp:Date.now()},sessionId:'debug-session',runId:'run1',hypothesisId:'C'})+'\n'); } catch(e){}
