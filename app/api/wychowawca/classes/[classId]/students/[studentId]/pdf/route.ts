@@ -57,6 +57,15 @@ const drawCenteredText = (
   page.drawText(text, { x: x - textWidth / 2, y, size, font })
 }
 
+const readFirstAvailableFont = async (candidates: string[]) => {
+  for (const candidate of candidates) {
+    try {
+      return await readFile(candidate)
+    } catch {}
+  }
+  throw new Error("No usable font file found")
+}
+
 export async function GET(
   request: Request,
   { params }: { params: Promise<{ classId: string; studentId: string }> }
@@ -122,12 +131,18 @@ export async function GET(
     const pdfDoc = await PDFDocument.create()
     pdfDoc.registerFontkit(fontkit)
     let page = pdfDoc.addPage([595, 842]) // A4
-    const fontBytes = await readFile(
-      join(process.cwd(), "public", "fonts", "Roboto-Regular.ttf")
-    )
-    const boldFontBytes = await readFile(
-      join(process.cwd(), "public", "fonts", "Roboto-Bold.ttf")
-    )
+    const fontBytes = await readFirstAvailableFont([
+      join(process.cwd(), "public", "fonts", "DejaVuSans.ttf"),
+      "/usr/share/fonts/ttf-dejavu/DejaVuSans.ttf",
+      "/System/Library/Fonts/Supplemental/Arial Unicode.ttf",
+      join(process.cwd(), "public", "fonts", "Roboto-Regular.ttf"),
+    ])
+    const boldFontBytes = await readFirstAvailableFont([
+      join(process.cwd(), "public", "fonts", "DejaVuSans-Bold.ttf"),
+      "/usr/share/fonts/ttf-dejavu/DejaVuSans-Bold.ttf",
+      "/System/Library/Fonts/Supplemental/Arial Bold.ttf",
+      join(process.cwd(), "public", "fonts", "Roboto-Bold.ttf"),
+    ])
     const font = await pdfDoc.embedFont(fontBytes)
     const boldFont = await pdfDoc.embedFont(boldFontBytes)
 
