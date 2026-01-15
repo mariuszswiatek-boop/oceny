@@ -123,10 +123,10 @@ export async function GET(
     pdfDoc.registerFontkit(fontkit)
     let page = pdfDoc.addPage([595, 842]) // A4
     const fontBytes = await readFile(
-      "/System/Library/Fonts/Supplemental/Arial Unicode.ttf"
+      join(process.cwd(), "public", "fonts", "NotoSans-Regular.ttf")
     )
     const boldFontBytes = await readFile(
-      "/System/Library/Fonts/Supplemental/Arial Bold.ttf"
+      join(process.cwd(), "public", "fonts", "NotoSans-Bold.ttf")
     )
     const font = await pdfDoc.embedFont(fontBytes)
     const boldFont = await pdfDoc.embedFont(boldFontBytes)
