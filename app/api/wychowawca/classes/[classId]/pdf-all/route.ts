@@ -293,7 +293,8 @@ export async function GET(
       }
 
       const pdfBytes = await pdfDoc.save()
-      return new NextResponse(pdfBytes, {
+      const pdfBuffer = Buffer.from(pdfBytes)
+      return new NextResponse(pdfBuffer, {
         headers: {
           "Content-Type": "application/pdf",
           "Content-Disposition": `attachment; filename="oceny_${class_.name}_${class_.schoolYear.name}.pdf"`,
