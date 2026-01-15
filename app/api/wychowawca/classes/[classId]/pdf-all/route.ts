@@ -61,7 +61,8 @@ const drawCenteredText = (
 const readFirstAvailableFont = async (candidates: string[]) => {
   for (const candidate of candidates) {
     try {
-      return await readFile(candidate)
+      const bytes = await readFile(candidate)
+      return { bytes, path: candidate }
     } catch {}
   }
   throw new Error("No usable font file found")
@@ -128,13 +129,13 @@ export async function GET(
       },
     })
 
-    const fontBytes = await readFirstAvailableFont([
+    const fontFile = await readFirstAvailableFont([
       join(process.cwd(), "public", "fonts", "DejaVuSans.ttf"),
       "/usr/share/fonts/dejavu/DejaVuSans.ttf",
       "/System/Library/Fonts/Supplemental/Arial Unicode.ttf",
       join(process.cwd(), "public", "fonts", "Roboto-Regular.ttf"),
     ])
-    const boldFontBytes = await readFirstAvailableFont([
+    const boldFontFile = await readFirstAvailableFont([
       join(process.cwd(), "public", "fonts", "DejaVuSans-Bold.ttf"),
       "/usr/share/fonts/dejavu/DejaVuSans-Bold.ttf",
       "/System/Library/Fonts/Supplemental/Arial Bold.ttf",
@@ -145,8 +146,10 @@ export async function GET(
       // Jeden wielostronicowy PDF
       const pdfDoc = await PDFDocument.create()
       pdfDoc.registerFontkit(fontkit)
-      const font = await pdfDoc.embedFont(fontBytes)
-      const boldFont = await pdfDoc.embedFont(boldFontBytes)
+      console.log("PDF font:", fontFile.path)
+      console.log("PDF bold font:", boldFontFile.path)
+      const font = await pdfDoc.embedFont(fontFile.bytes)
+      const boldFont = await pdfDoc.embedFont(boldFontFile.bytes)
 
       for (const student of class_.students) {
         const studentGrades = allGrades.filter((g) => g.studentId === student.id)
@@ -327,8 +330,10 @@ export async function GET(
         const studentGrades = allGrades.filter((g) => g.studentId === student.id)
         const pdfDoc = await PDFDocument.create()
         pdfDoc.registerFontkit(fontkit)
-        const font = await pdfDoc.embedFont(fontBytes)
-        const boldFont = await pdfDoc.embedFont(boldFontBytes)
+        console.log("PDF font:", fontFile.path)
+        console.log("PDF bold font:", boldFontFile.path)
+        const font = await pdfDoc.embedFont(fontFile.bytes)
+        const boldFont = await pdfDoc.embedFont(boldFontFile.bytes)
         
         const page = pdfDoc.addPage([595, 842])
         let y = 800
