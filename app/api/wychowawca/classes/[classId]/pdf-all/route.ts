@@ -120,10 +120,10 @@ export async function GET(
     })
 
     const fontBytes = await readFile(
-      join(process.cwd(), "public", "fonts", "NotoSans-Regular.ttf")
+      join(process.cwd(), "public", "fonts", "Roboto-Regular.ttf")
     )
     const boldFontBytes = await readFile(
-      join(process.cwd(), "public", "fonts", "NotoSans-Bold.ttf")
+      join(process.cwd(), "public", "fonts", "Roboto-Bold.ttf")
     )
 
     if (format === "single") {
