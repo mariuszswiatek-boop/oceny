@@ -40,7 +40,6 @@ export default function AdminPage() {
           message: "Sign out result",
           data: {
             url: result?.url ?? null,
-            error: result?.error ?? null,
           },
           timestamp: Date.now(),
           sessionId: "debug-session",
