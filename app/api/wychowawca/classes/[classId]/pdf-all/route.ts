@@ -130,13 +130,13 @@ export async function GET(
 
     const fontBytes = await readFirstAvailableFont([
       join(process.cwd(), "public", "fonts", "DejaVuSans.ttf"),
-      "/usr/share/fonts/ttf-dejavu/DejaVuSans.ttf",
+      "/usr/share/fonts/dejavu/DejaVuSans.ttf",
       "/System/Library/Fonts/Supplemental/Arial Unicode.ttf",
       join(process.cwd(), "public", "fonts", "Roboto-Regular.ttf"),
     ])
     const boldFontBytes = await readFirstAvailableFont([
       join(process.cwd(), "public", "fonts", "DejaVuSans-Bold.ttf"),
-      "/usr/share/fonts/ttf-dejavu/DejaVuSans-Bold.ttf",
+      "/usr/share/fonts/dejavu/DejaVuSans-Bold.ttf",
       "/System/Library/Fonts/Supplemental/Arial Bold.ttf",
       join(process.cwd(), "public", "fonts", "Roboto-Bold.ttf"),
     ])
