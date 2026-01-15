@@ -1,4 +1,4 @@
-import { NextAuthOptions } from "next-auth"
+import type { NextAuthConfig } from "next-auth"
 import CredentialsProvider from "next-auth/providers/credentials"
 import { prisma } from "./prisma"
 import bcrypt from "bcryptjs"
@@ -9,7 +9,7 @@ import { appendFileSync } from "fs"
 try { appendFileSync('/Users/mariuszswiatek/oceny/.cursor/debug.log', JSON.stringify({location:'lib/auth.ts:7',message:'Loading authOptions, importing prisma',data:{timestamp:Date.now()},sessionId:'debug-session',runId:'run1',hypothesisId:'C'})+'\n'); } catch(e){}
 // #endregion
 
-export const authOptions: NextAuthOptions = {
+export const authOptions: NextAuthConfig = {
   providers: [
     CredentialsProvider({
       name: "Credentials",
