@@ -125,12 +125,6 @@ export async function GET(
     const boldFontBytes = await readFile(
       join(process.cwd(), "public", "fonts", "NotoSans-Bold.ttf")
     )
-        const fontBytes = await readFile(
-          join(process.cwd(), "public", "fonts", "NotoSans-Regular.ttf")
-        )
-        const boldFontBytes = await readFile(
-          join(process.cwd(), "public", "fonts", "NotoSans-Bold.ttf")
-        )
 
     if (format === "single") {
       // Jeden wielostronicowy PDF
