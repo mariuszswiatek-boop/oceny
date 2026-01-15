@@ -305,8 +305,13 @@ export async function GET(
     })
 
     const pdfBytes = await pdfDoc.save()
+    const pdfArrayBuffer = pdfBytes.buffer.slice(
+      pdfBytes.byteOffset,
+      pdfBytes.byteOffset + pdfBytes.byteLength
+    ) as ArrayBuffer
+    const pdfBlob = new Blob([pdfArrayBuffer], { type: "application/pdf" })
 
-    return new NextResponse(pdfBytes, {
+    return new NextResponse(pdfBlob, {
       headers: {
         "Content-Type": "application/pdf",
         "Content-Disposition": `attachment; filename="oceny_${student.firstName}_${student.lastName}_${student.class.schoolYear.name}.pdf"`,

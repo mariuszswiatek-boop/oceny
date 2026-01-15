@@ -293,8 +293,12 @@ export async function GET(
       }
 
       const pdfBytes = await pdfDoc.save()
-      const pdfBuffer = Buffer.from(pdfBytes)
-      return new NextResponse(pdfBuffer, {
+      const pdfArrayBuffer = pdfBytes.buffer.slice(
+        pdfBytes.byteOffset,
+        pdfBytes.byteOffset + pdfBytes.byteLength
+      ) as ArrayBuffer
+      const pdfBlob = new Blob([pdfArrayBuffer], { type: "application/pdf" })
+      return new NextResponse(pdfBlob, {
         headers: {
           "Content-Type": "application/pdf",
           "Content-Disposition": `attachment; filename="oceny_${class_.name}_${class_.schoolYear.name}.pdf"`,
@@ -468,7 +472,12 @@ export async function GET(
       }
 
       const zipBuffer = await zip.generateAsync({ type: "nodebuffer" })
-      return new NextResponse(zipBuffer, {
+      const zipArrayBuffer = zipBuffer.buffer.slice(
+        zipBuffer.byteOffset,
+        zipBuffer.byteOffset + zipBuffer.byteLength
+      ) as ArrayBuffer
+      const zipBlob = new Blob([zipArrayBuffer], { type: "application/zip" })
+      return new NextResponse(zipBlob, {
         headers: {
           "Content-Type": "application/zip",
           "Content-Disposition": `attachment; filename="oceny_${class_.name}_${class_.schoolYear.name}.zip"`,
