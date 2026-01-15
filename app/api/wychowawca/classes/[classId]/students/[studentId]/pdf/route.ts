@@ -219,7 +219,7 @@ export async function GET(
 
     gradeScales.forEach((scale, idx) => {
       const x = margin + colWidths[0] + idx * colWidths[1]
-    drawWrappedText(
+      drawWrappedText(
         page,
         scale.label,
         x,
@@ -235,8 +235,8 @@ export async function GET(
     drawCenteredText(
       page,
       "Podpis",
-      margin + colWidths[0] + 4 * colWidths[1] + colWidths[4] / 2,
-      y: headerY,
+      margin + colWidths[0] + 4 * colWidths[1] + colWidths[5] / 2,
+      headerY,
       boldFont,
       9
     )
