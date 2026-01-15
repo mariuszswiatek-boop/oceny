@@ -18,22 +18,25 @@ export const authOptions: NextAuthConfig = {
         password: { label: "Password", type: "password" }
       },
       async authorize(credentials) {
-        if (!credentials?.email || !credentials?.password) {
+        const credentialsSchema = z.object({
+          email: z.string().email(),
+          password: z.string().min(1),
+        })
+        const parsedCredentials = credentialsSchema.safeParse(credentials)
+        if (!parsedCredentials.success) {
           return null
         }
+        const { email, password } = parsedCredentials.data
 
         const user = await prisma.user.findUnique({
-          where: { email: credentials.email }
+          where: { email }
         })
 
         if (!user) {
           return null
         }
 
-        const isPasswordValid = await bcrypt.compare(
-          credentials.password,
-          user.password
-        )
+        const isPasswordValid = await bcrypt.compare(password, user.password)
 
         if (!isPasswordValid) {
           return null
