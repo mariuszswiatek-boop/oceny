@@ -53,16 +53,19 @@ const buildStudentSection = (
       const scaleCells = gradeScales
         .map((scale) => {
           const isSelected = selected === scale.id
+          const dotStyle = isSelected
+            ? `background:${scale.colorHex}; border-color:${scale.colorHex};`
+            : "background:transparent; border-color:#111827;"
           return `
-            <td class="scale-cell" style="color: ${scale.colorHex}">
-              <span class="dot ${isSelected ? "selected" : ""}"></span>
+            <td class="scale-cell">
+              <span class="dot" style="${dotStyle}"></span>
             </td>
           `
         })
         .join("")
 
       return `
-        <tr>
+        <tr class="row">
           <td class="subject-cell">${escapeHtml(subject.name)}</td>
           ${scaleCells}
           <td class="signature-cell"></td>
@@ -86,7 +89,7 @@ const buildStudentSection = (
       </div>
       <table class="grades-table">
         <thead>
-          <tr>
+          <tr class="header-row">
             <th class="subject-header">Przedmiot</th>
             ${gradeScales
               .map(
@@ -99,6 +102,7 @@ const buildStudentSection = (
               .join("")}
             <th class="signature-header">Podpis</th>
           </tr>
+          <tr class="divider"><th colspan="${gradeScales.length + 2}"></th></tr>
         </thead>
         <tbody>
           ${rows}
@@ -130,31 +134,39 @@ export const buildStudentPdfHtml = (options: {
             padding: 0;
           }
           .page { width: 100%; }
-          .header { text-align: left; margin-bottom: 16px; }
+          .header { text-align: left; margin-bottom: 18px; }
           .title { font-size: 18px; font-weight: 700; }
           .subtitle { font-size: 16px; font-weight: 700; margin-top: 6px; }
-          .meta { margin-bottom: 16px; line-height: 1.5; }
-          .label { font-weight: 600; }
+          .meta { margin-bottom: 18px; line-height: 1.6; }
+          .label { font-weight: 700; margin-right: 8px; }
           .grades-table { width: 100%; border-collapse: collapse; }
           .grades-table th, .grades-table td {
-            border: 1px solid #111827;
-            padding: 6px 8px;
+            padding: 6px 6px;
             text-align: center;
             vertical-align: middle;
           }
-          .subject-header, .subject-cell { text-align: left; width: 35%; }
-          .signature-header, .signature-cell { width: 12%; }
-          .scale-header { font-size: 10px; color: #111827; }
+          .subject-header, .subject-cell { text-align: left; width: 38%; }
+          .signature-header, .signature-cell { width: 10%; }
+          .scale-header {
+            font-size: 10px;
+            font-weight: 700;
+            color: #111827;
+          }
+          .divider th {
+            border-bottom: 1px solid #111827;
+            padding: 0;
+            height: 8px;
+          }
+          .row td {
+            border-bottom: 1px solid #e5e7eb;
+          }
           .scale-cell { height: 24px; }
           .dot {
             width: 10px;
             height: 10px;
             border-radius: 999px;
-            border: 1px solid currentColor;
+            border: 1px solid #111827;
             display: inline-block;
-          }
-          .dot.selected {
-            background: currentColor;
           }
         </style>
       </head>
@@ -211,31 +223,39 @@ export const buildClassPdfHtml = (options: {
           }
           .page { width: 100%; page-break-after: always; }
           .page-break { page-break-after: always; }
-          .header { text-align: left; margin-bottom: 16px; }
+          .header { text-align: left; margin-bottom: 18px; }
           .title { font-size: 18px; font-weight: 700; }
           .subtitle { font-size: 16px; font-weight: 700; margin-top: 6px; }
-          .meta { margin-bottom: 16px; line-height: 1.5; }
-          .label { font-weight: 600; }
+          .meta { margin-bottom: 18px; line-height: 1.6; }
+          .label { font-weight: 700; margin-right: 8px; }
           .grades-table { width: 100%; border-collapse: collapse; }
           .grades-table th, .grades-table td {
-            border: 1px solid #111827;
-            padding: 6px 8px;
+            padding: 6px 6px;
             text-align: center;
             vertical-align: middle;
           }
-          .subject-header, .subject-cell { text-align: left; width: 35%; }
-          .signature-header, .signature-cell { width: 12%; }
-          .scale-header { font-size: 10px; color: #111827; }
+          .subject-header, .subject-cell { text-align: left; width: 38%; }
+          .signature-header, .signature-cell { width: 10%; }
+          .scale-header {
+            font-size: 10px;
+            font-weight: 700;
+            color: #111827;
+          }
+          .divider th {
+            border-bottom: 1px solid #111827;
+            padding: 0;
+            height: 8px;
+          }
+          .row td {
+            border-bottom: 1px solid #e5e7eb;
+          }
           .scale-cell { height: 24px; }
           .dot {
             width: 10px;
             height: 10px;
             border-radius: 999px;
-            border: 1px solid currentColor;
+            border: 1px solid #111827;
             display: inline-block;
-          }
-          .dot.selected {
-            background: currentColor;
           }
         </style>
       </head>
