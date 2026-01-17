@@ -123,16 +123,16 @@ export default function WychowawcaClassPage() {
           document.body.removeChild(a)
         }
       } else {
-        // Cała klasa
+        // Cała klasa (wielostronicowy PDF)
         const res = await fetch(
-          `/api/wychowawca/classes/${classId}/pdf-all?schoolYearId=${schoolYearId}&format=zip`
+          `/api/wychowawca/classes/${classId}/pdf-all?schoolYearId=${schoolYearId}`
         )
         if (res.ok) {
           const blob = await res.blob()
           const url = window.URL.createObjectURL(blob)
           const a = document.createElement("a")
           a.href = url
-          a.download = `oceny_klasa.zip`
+          a.download = `oceny_klasa.pdf`
           document.body.appendChild(a)
           a.click()
           window.URL.revokeObjectURL(url)
