@@ -6,10 +6,11 @@ import { requireRole } from "@/lib/permissions"
 
 const uuidField = z.string().uuid()
 const optionalUuid = z.preprocess((value) => (value === "" ? undefined : value), uuidField.optional())
+const optionalId = z.preprocess((value) => (value === "" ? undefined : value), z.string().min(1).optional())
 
 const assignmentSchema = z.object({
   teacherId: optionalUuid,
-  classId: optionalUuid,
+  classId: optionalId,
   subjectId: optionalUuid,
   schoolYearId: optionalUuid,
   isActive: z.boolean().optional(),
