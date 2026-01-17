@@ -5,8 +5,10 @@ import { Prisma } from "@prisma/client"
 import { requireRole } from "@/lib/permissions"
 
 const uuidField = z.string().uuid()
-const optionalUuid = z.preprocess((value) => (value === "" ? undefined : value), uuidField.optional())
-const optionalId = z.preprocess((value) => (value === "" ? undefined : value), z.string().min(1).optional())
+const emptyToUndefined = (value: unknown) =>
+  value === "" || value === null || value === undefined ? undefined : value
+const optionalUuid = z.preprocess(emptyToUndefined, uuidField.optional())
+const optionalId = z.preprocess(emptyToUndefined, z.string().min(1).optional())
 
 const assignmentSchema = z.object({
   teacherId: optionalUuid,
