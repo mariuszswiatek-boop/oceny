@@ -30,7 +30,7 @@ type Assignment = {
 }
 
 const fieldClass =
-  "w-full rounded border border-gray-300 px-3 py-2 text-sm text-gray-900 placeholder:text-gray-400 focus:border-gray-500 focus:outline-none"
+  "w-full rounded border border-gray-300 bg-white px-3 py-2 text-sm text-slate-900 placeholder:text-slate-400 focus:border-blue-500 focus:outline-none"
 
 export default function AdminAssignmentsPage() {
   const { data: session, status } = useSession()
@@ -197,7 +197,7 @@ export default function AdminAssignmentsPage() {
         )}
 
         <section className="rounded-lg bg-white p-6 shadow">
-          <h2 className="text-xl font-semibold text-gray-900">Filtry</h2>
+            <h2 className="text-xl font-semibold text-slate-900">Filtry</h2>
           <div className="mt-4 grid gap-4 md:grid-cols-4">
             <select
               className={fieldClass}
@@ -257,7 +257,7 @@ export default function AdminAssignmentsPage() {
         </section>
 
         <section className="rounded-lg bg-white p-6 shadow">
-          <h2 className="text-xl font-semibold text-gray-900">Dodaj przypisanie</h2>
+            <h2 className="text-xl font-semibold text-slate-900">Dodaj przypisanie</h2>
           <div className="mt-4 grid gap-4 md:grid-cols-4">
             <select
               className={fieldClass}
@@ -317,11 +317,11 @@ export default function AdminAssignmentsPage() {
         </section>
 
         <section className="rounded-lg bg-white p-6 shadow">
-          <h2 className="text-xl font-semibold text-gray-900">Lista przypisań</h2>
+            <h2 className="text-xl font-semibold text-slate-900">Lista przypisań</h2>
           <div className="mt-4 overflow-x-auto">
             <table className="w-full text-sm">
               <thead>
-                <tr className="text-left text-gray-500">
+                <tr className="text-left text-slate-700">
                   <th className="py-2">Nauczyciel</th>
                   <th>Rok</th>
                   <th>Klasa</th>
@@ -330,15 +330,15 @@ export default function AdminAssignmentsPage() {
                   <th></th>
                 </tr>
               </thead>
-              <tbody>
+              <tbody className="text-slate-900">
                 {assignments.map((assignment) => (
                   <tr key={assignment.id} className="border-t">
-                    <td className="py-2">
+                    <td className="py-2 text-slate-900">
                       {assignment.teacher.firstName} {assignment.teacher.lastName}
                     </td>
-                    <td>{assignment.schoolYear.name}</td>
-                    <td>{assignment.class.name}</td>
-                    <td>{assignment.subject.name}</td>
+                    <td className="text-slate-900">{assignment.schoolYear.name}</td>
+                    <td className="text-slate-900">{assignment.class.name}</td>
+                    <td className="text-slate-900">{assignment.subject.name}</td>
                     <td>
                       <span className={assignment.isActive ? "text-green-600" : "text-gray-500"}>
                         {assignment.isActive ? "Aktywne" : "Archiwalne"}
