@@ -4,11 +4,14 @@ import { prisma } from "@/lib/prisma"
 import { Prisma } from "@prisma/client"
 import { requireRole } from "@/lib/permissions"
 
+const uuidField = z.string().uuid()
+const optionalUuid = z.preprocess((value) => (value === "" ? undefined : value), uuidField.optional())
+
 const assignmentSchema = z.object({
-  teacherId: z.string().uuid(),
-  classId: z.string().uuid(),
-  subjectId: z.string().uuid(),
-  schoolYearId: z.string().uuid(),
+  teacherId: optionalUuid,
+  classId: optionalUuid,
+  subjectId: optionalUuid,
+  schoolYearId: optionalUuid,
   isActive: z.boolean().optional(),
 })
 
@@ -51,7 +54,16 @@ export async function POST(request: Request) {
     const payload = await request.json()
     const data = assignmentSchema.safeParse(payload)
     if (!data.success) {
-      return NextResponse.json({ error: "Invalid input", details: data.error.issues }, { status: 400 })
+      const message = data.error.issues[0]?.message ?? "Invalid input"
+      return NextResponse.json({ error: message, details: data.error.issues }, { status: 400 })
+    }
+
+    const { teacherId, classId, subjectId } = data.data
+    if (!teacherId || !classId || !subjectId) {
+      return NextResponse.json(
+        { error: "Uzupełnij nauczyciela, klasę i przedmiot." },
+        { status: 400 }
+      )
     }
 
     let schoolYearId = data.data.schoolYearId
@@ -65,9 +77,9 @@ export async function POST(request: Request) {
 
     const assignment = await prisma.teacherAssignment.create({
       data: {
-        teacherId: data.data.teacherId,
-        classId: data.data.classId,
-        subjectId: data.data.subjectId,
+        teacherId,
+        classId,
+        subjectId,
         schoolYearId,
         isActive: data.data.isActive ?? true,
       },
