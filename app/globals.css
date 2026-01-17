@@ -34,6 +34,38 @@ body {
 }
 
 @layer base {
+  :root {
+    color-scheme: light;
+  }
+
+  .text-gray-500 {
+    color: #475569;
+  }
+
+  .text-gray-600 {
+    color: #334155;
+  }
+
+  .text-gray-700 {
+    color: #1f2937;
+  }
+
+  .text-slate-600 {
+    color: #334155;
+  }
+
+  .text-slate-700 {
+    color: #1f2937;
+  }
+
+  .bg-gray-50 {
+    background-color: #f8fafc;
+  }
+
+  .bg-white {
+    background-color: #ffffff;
+  }
+
   label {
     color: var(--muted);
   }
