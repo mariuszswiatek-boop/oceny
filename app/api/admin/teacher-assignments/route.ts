@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server"
 import { z } from "zod"
 import { prisma } from "@/lib/prisma"
+import { Prisma } from "@prisma/client"
 import { requireRole } from "@/lib/permissions"
 
 const assignmentSchema = z.object({
@@ -47,20 +48,34 @@ export async function GET(request: Request) {
 export async function POST(request: Request) {
   try {
     await requireRole("ADMIN")
-    const data = assignmentSchema.parse(await request.json())
+    const payload = await request.json()
+    const data = assignmentSchema.safeParse(payload)
+    if (!data.success) {
+      return NextResponse.json({ error: "Invalid input", details: data.error.issues }, { status: 400 })
+    }
+
+    let schoolYearId = data.data.schoolYearId
+    if (!schoolYearId) {
+      const activeYear = await prisma.schoolYear.findFirst({ where: { isActive: true } })
+      if (!activeYear) {
+        return NextResponse.json({ error: "No active school year found" }, { status: 400 })
+      }
+      schoolYearId = activeYear.id
+    }
+
     const assignment = await prisma.teacherAssignment.create({
       data: {
-        teacherId: data.teacherId,
-        classId: data.classId,
-        subjectId: data.subjectId,
-        schoolYearId: data.schoolYearId,
-        isActive: data.isActive ?? true,
+        teacherId: data.data.teacherId,
+        classId: data.data.classId,
+        subjectId: data.data.subjectId,
+        schoolYearId,
+        isActive: data.data.isActive ?? true,
       },
     })
     return NextResponse.json(assignment, { status: 201 })
   } catch (error: any) {
-    if (error instanceof z.ZodError) {
-      return NextResponse.json({ error: "Invalid input", details: error.issues }, { status: 400 })
+    if (error instanceof Prisma.PrismaClientKnownRequestError && error.code === "P2002") {
+      return NextResponse.json({ error: "Przypisanie już istnieje" }, { status: 409 })
     }
     return NextResponse.json(
       { error: error.message || "Internal server error" },
