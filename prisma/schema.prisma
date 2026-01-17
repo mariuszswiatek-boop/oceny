@@ -46,8 +46,9 @@ model SchoolYear {
   updatedAt DateTime @updatedAt
 
   // Relacje
-  classes      Class[]
-  studentGrades StudentGrade[]
+  classes           Class[]
+  studentGrades     StudentGrade[]
+  teacherAssignments TeacherAssignment[]
 }
 
 model Class {
