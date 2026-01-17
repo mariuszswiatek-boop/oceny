@@ -5,12 +5,16 @@ CREATE TYPE "UserRole_new" AS ENUM ('ADMIN', 'TEACHER', 'HOMEROOM', 'READONLY');
 
 ALTER TABLE "User" ADD COLUMN "isActive" BOOLEAN NOT NULL DEFAULT true;
 
+ALTER TABLE "User"
+  ALTER COLUMN "role" TYPE TEXT
+  USING ("role"::text);
+
 UPDATE "User" SET "role" = 'TEACHER' WHERE "role" = 'NAUCZYCIEL';
 UPDATE "User" SET "role" = 'HOMEROOM' WHERE "role" = 'WYCHOWAWCA';
 
 ALTER TABLE "User"
   ALTER COLUMN "role" TYPE "UserRole_new"
-  USING ("role"::text::"UserRole_new");
+  USING ("role"::"UserRole_new");
 
 DROP TYPE "UserRole";
 ALTER TYPE "UserRole_new" RENAME TO "UserRole";
