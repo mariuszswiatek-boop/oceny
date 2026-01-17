@@ -283,7 +283,7 @@ export default function AdminSettingsPage() {
                   <th></th>
                 </tr>
               </thead>
-              <tbody>
+              <tbody className="text-slate-900">
                 {schoolYears.map((year) => (
                   <tr key={year.id} className="border-t">
                     <td className="py-2">{year.name}</td>
@@ -372,7 +372,7 @@ export default function AdminSettingsPage() {
                   <th></th>
                 </tr>
               </thead>
-              <tbody>
+              <tbody className="text-slate-900">
                 {subjects.map((subject) => (
                   <tr key={subject.id} className="border-t">
                     <td className="py-2">{subject.name}</td>
@@ -460,7 +460,7 @@ export default function AdminSettingsPage() {
                   <th></th>
                 </tr>
               </thead>
-              <tbody>
+              <tbody className="text-slate-900">
                 {gradeScales.map((scale) => (
                   <tr key={scale.id} className="border-t">
                     <td className="py-2">{scale.label}</td>
@@ -583,7 +583,7 @@ export default function AdminSettingsPage() {
                   <th></th>
                 </tr>
               </thead>
-              <tbody>
+              <tbody className="text-slate-900">
                 {classes.map((classItem) => (
                   <tr key={classItem.id} className="border-t">
                     <td className="py-2">{classItem.name}</td>
