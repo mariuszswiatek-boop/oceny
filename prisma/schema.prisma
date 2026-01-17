@@ -55,7 +55,7 @@ model Class {
   id           String   @id @default(uuid())
   name         String   // np. "2A", "3B"
   schoolYearId String
-  homeroomTeacherId String?
+  teacherId    String?
   sortOrder    Int      @default(0)
   isActive     Boolean  @default(true)
   createdAt    DateTime @default(now())
@@ -63,7 +63,7 @@ model Class {
 
   // Relacje
   schoolYear         SchoolYear         @relation(fields: [schoolYearId], references: [id], onDelete: Cascade)
-  homeroomTeacher    User?              @relation("ClassTeacher", fields: [homeroomTeacherId], references: [id])
+  teacher            User?              @relation("ClassTeacher", fields: [teacherId], references: [id])
   students           Student[]
   teacherAssignments TeacherAssignment[]
 

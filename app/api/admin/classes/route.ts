@@ -6,7 +6,7 @@ import { requireRole } from "@/lib/permissions"
 const classSchema = z.object({
   name: z.string().min(1),
   schoolYearId: z.string().uuid(),
-  homeroomTeacherId: z.string().uuid().nullable().optional(),
+  teacherId: z.string().uuid().nullable().optional(),
   sortOrder: z.number().int().optional(),
   isActive: z.boolean().optional(),
 })
@@ -19,7 +19,7 @@ export async function GET(request: Request) {
     const where = schoolYearId ? { schoolYearId } : {}
     const classes = await prisma.class.findMany({
       where,
-      include: { schoolYear: true, homeroomTeacher: true },
+      include: { schoolYear: true, teacher: true },
       orderBy: [{ sortOrder: "asc" }, { name: "asc" }],
     })
     return NextResponse.json(classes)
@@ -39,7 +39,7 @@ export async function POST(request: Request) {
       data: {
         name: data.name,
         schoolYearId: data.schoolYearId,
-        homeroomTeacherId: data.homeroomTeacherId ?? null,
+        teacherId: data.teacherId ?? null,
         sortOrder: data.sortOrder ?? 0,
         isActive: data.isActive ?? true,
       },

@@ -50,7 +50,7 @@ export async function DELETE(
     const { id } = await params
     const [assignments, classes, grades] = await Promise.all([
       prisma.teacherAssignment.count({ where: { teacherId: id } }),
-      prisma.class.count({ where: { homeroomTeacherId: id } }),
+      prisma.class.count({ where: { teacherId: id } }),
       prisma.studentGrade.count({ where: { teacherId: id } }),
     ])
     if (assignments > 0 || classes > 0 || grades > 0) {

@@ -16,7 +16,7 @@ export async function GET() {
       },
       include: {
         schoolYear: true,
-        homeroomTeacher: {
+        teacher: {
           select: {
             id: true,
             firstName: true,

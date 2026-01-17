@@ -40,11 +40,11 @@ type ClassItem = {
   id: string
   name: string
   schoolYearId: string
-  homeroomTeacherId: string | null
+  teacherId: string | null
   sortOrder: number
   isActive: boolean
   schoolYear?: SchoolYear
-  homeroomTeacher?: User | null
+  teacher?: User | null
 }
 
 const fieldClass =
@@ -78,7 +78,7 @@ export default function AdminSettingsPage() {
   const [newClass, setNewClass] = useState({
     name: "",
     schoolYearId: "",
-    homeroomTeacherId: "",
+    teacherId: "",
     sortOrder: 1,
     isActive: true,
   })
@@ -531,8 +531,8 @@ export default function AdminSettingsPage() {
             </select>
             <select
               className={fieldClass}
-              value={newClass.homeroomTeacherId}
-              onChange={(e) => setNewClass({ ...newClass, homeroomTeacherId: e.target.value })}
+              value={newClass.teacherId}
+              onChange={(e) => setNewClass({ ...newClass, teacherId: e.target.value })}
             >
               <option value="">Wychowawca</option>
               {homeroomTeachers.map((teacher) => (
@@ -553,13 +553,13 @@ export default function AdminSettingsPage() {
                   "/api/admin/classes",
                   {
                     ...newClass,
-                    homeroomTeacherId: newClass.homeroomTeacherId || null,
+                    teacherId: newClass.teacherId || null,
                   },
                   () =>
                     setNewClass({
                       name: "",
                       schoolYearId: schoolYears[0]?.id ?? "",
-                      homeroomTeacherId: "",
+                      teacherId: "",
                       sortOrder: 1,
                       isActive: true,
                     })
@@ -589,8 +589,8 @@ export default function AdminSettingsPage() {
                     <td className="py-2">{classItem.name}</td>
                     <td>{classItem.schoolYear?.name ?? "-"}</td>
                     <td>
-                      {classItem.homeroomTeacher
-                        ? `${classItem.homeroomTeacher.firstName} ${classItem.homeroomTeacher.lastName}`
+                      {classItem.teacher
+                        ? `${classItem.teacher.firstName} ${classItem.teacher.lastName}`
                         : "-"}
                     </td>
                     <td>{classItem.sortOrder}</td>

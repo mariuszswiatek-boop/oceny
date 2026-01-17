@@ -27,7 +27,7 @@ export async function GET(
       where: { id: classId },
       include: {
         schoolYear: true,
-        homeroomTeacher: true,
+        teacher: true,
         students: {
           orderBy: [{ lastName: "asc" }, { firstName: "asc" }],
         },
@@ -69,8 +69,8 @@ export async function GET(
       classInfo: {
         name: class_.name,
         schoolYearName: class_.schoolYear.name,
-        homeroomName: `${class_.homeroomTeacher?.firstName || ""} ${
-          class_.homeroomTeacher?.lastName || ""
+        homeroomName: `${class_.teacher?.firstName || ""} ${
+          class_.teacher?.lastName || ""
         }`.trim(),
       },
       subjects,

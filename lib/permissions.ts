@@ -56,12 +56,12 @@ export async function canTeacherAccessSubjectClass(
 
 // Sprawdza czy wychowawca ma dostęp do klasy
 export async function canTeacherAccessClassAsHomeroom(teacherId: string, classId: string) {
-  const class_ = await prisma.class.findFirst({
-    where: {
-      id: classId,
-      homeroomTeacherId: teacherId,
-    },
-  })
+    const class_ = await prisma.class.findFirst({
+      where: {
+        id: classId,
+        teacherId,
+      },
+    })
   return !!class_
 }
 

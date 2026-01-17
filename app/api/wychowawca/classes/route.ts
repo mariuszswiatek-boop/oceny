@@ -8,7 +8,7 @@ export async function GET() {
 
     const classes = await prisma.class.findMany({
       where: {
-        homeroomTeacherId: user.id,
+        teacherId: user.id,
       },
       include: {
         schoolYear: true,

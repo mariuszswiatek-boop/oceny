@@ -6,7 +6,7 @@ import { requireRole } from "@/lib/permissions"
 const updateSchema = z.object({
   name: z.string().min(1).optional(),
   schoolYearId: z.string().uuid().optional(),
-  homeroomTeacherId: z.string().uuid().nullable().optional(),
+  teacherId: z.string().uuid().nullable().optional(),
   sortOrder: z.number().int().optional(),
   isActive: z.boolean().optional(),
 })

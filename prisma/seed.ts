@@ -156,12 +156,12 @@ async function main() {
   // Klasa
   const class_ = await prisma.class.upsert({
     where: { id: "class-2a" },
-    update: { isActive: true, sortOrder: 1, homeroomTeacherId: wychowawca.id },
+    update: { isActive: true, sortOrder: 1, teacherId: wychowawca.id },
     create: {
       id: "class-2a",
       name: "2A",
       schoolYearId: schoolYear.id,
-      homeroomTeacherId: wychowawca.id,
+      teacherId: wychowawca.id,
       sortOrder: 1,
       isActive: true,
     },
