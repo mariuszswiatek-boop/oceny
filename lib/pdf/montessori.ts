@@ -91,7 +91,7 @@ const buildStudentSection = (
             ${gradeScales
               .map(
                 (scale) => `
-                  <th class="scale-header" style="background: ${scale.colorHex}">
+                  <th class="scale-header" style="color: ${scale.colorHex}">
                     ${escapeHtml(scale.label)}
                   </th>
                 `
@@ -144,7 +144,7 @@ export const buildStudentPdfHtml = (options: {
           }
           .subject-header, .subject-cell { text-align: left; width: 35%; }
           .signature-header, .signature-cell { width: 12%; }
-          .scale-header { font-size: 10px; color: #111827; }
+          .scale-header { font-size: 10px; background: transparent; }
           .scale-cell { height: 24px; }
           .dot {
             width: 10px;
