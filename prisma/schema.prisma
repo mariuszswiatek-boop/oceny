@@ -13,8 +13,8 @@ datasource db {
 
 enum UserRole {
   ADMIN
-  NAUCZYCIEL
-  WYCHOWAWCA
+  TEACHER
+  HOMEROOM
   READONLY
 }
 
@@ -25,6 +25,7 @@ model User {
   firstName String
   lastName  String
   role      UserRole @default(READONLY)
+  isActive  Boolean  @default(true)
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
@@ -37,9 +38,10 @@ model User {
 model SchoolYear {
   id        String   @id @default(uuid())
   name      String   @unique // np. "2023/2024"
-  startDate DateTime
-  endDate   DateTime
+  startDate DateTime?
+  endDate   DateTime?
   isActive  Boolean  @default(false)
+  sortOrder Int      @default(0)
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
@@ -52,15 +54,19 @@ model Class {
   id           String   @id @default(uuid())
   name         String   // np. "2A", "3B"
   schoolYearId String
-  teacherId    String?  // wychowawca
+  homeroomTeacherId String?
+  sortOrder    Int      @default(0)
+  isActive     Boolean  @default(true)
   createdAt    DateTime @default(now())
   updatedAt    DateTime @updatedAt
 
   // Relacje
   schoolYear         SchoolYear         @relation(fields: [schoolYearId], references: [id], onDelete: Cascade)
-  teacher            User?              @relation("ClassTeacher", fields: [teacherId], references: [id])
+  homeroomTeacher    User?              @relation("ClassTeacher", fields: [homeroomTeacherId], references: [id])
   students           Student[]
   teacherAssignments TeacherAssignment[]
+
+  @@unique([name, schoolYearId])
 }
 
 model Student {
@@ -68,6 +74,7 @@ model Student {
   firstName    String
   lastName     String
   classId      String
+  isActive     Boolean  @default(true)
   createdAt    DateTime @default(now())
   updatedAt    DateTime @updatedAt
 
@@ -83,6 +90,9 @@ model ParentContact {
   email     String
   firstName String?
   lastName  String?
+  fullName  String?
+  phone     String?
+  isPrimary Boolean  @default(false)
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
@@ -93,6 +103,8 @@ model ParentContact {
 model Subject {
   id        String   @id @default(uuid())
   name      String   @unique // np. "Język polski", "Matematyka"
+  sortOrder Int      @default(0)
+  isActive  Boolean  @default(true)
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
@@ -106,18 +118,22 @@ model TeacherAssignment {
   teacherId String
   subjectId String
   classId   String
+  schoolYearId String
+  isActive  Boolean  @default(true)
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
   // Relacje
-  teacher User    @relation(fields: [teacherId], references: [id], onDelete: Cascade)
-  subject Subject @relation(fields: [subjectId], references: [id], onDelete: Cascade)
-  class   Class   @relation(fields: [classId], references: [id], onDelete: Cascade)
+  teacher    User       @relation(fields: [teacherId], references: [id], onDelete: Cascade)
+  subject    Subject    @relation(fields: [subjectId], references: [id], onDelete: Cascade)
+  class      Class      @relation(fields: [classId], references: [id], onDelete: Cascade)
+  schoolYear SchoolYear @relation(fields: [schoolYearId], references: [id], onDelete: Cascade)
 
-  @@unique([teacherId, subjectId, classId])
+  @@unique([teacherId, subjectId, classId, schoolYearId])
   @@index([teacherId])
   @@index([classId])
   @@index([subjectId])
+  @@index([schoolYearId])
 }
 
 model MontessoriGradeScale {
@@ -125,6 +141,7 @@ model MontessoriGradeScale {
   label     String   @unique // np. "NIE/SŁABO OPANOWAŁ"
   colorHex  String   // np. "#FF0000"
   sortOrder Int      @unique
+  isActive  Boolean  @default(true)
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 

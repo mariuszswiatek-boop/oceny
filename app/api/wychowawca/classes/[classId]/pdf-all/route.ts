@@ -58,14 +58,13 @@ const drawCenteredText = (
   page.drawText(text, { x: x - textWidth / 2, y, size, font })
 }
 
-const readFirstAvailableFont = async (candidates: string[]) => {
-  for (const candidate of candidates) {
-    try {
-      const bytes = await readFile(candidate)
-      return { bytes, path: candidate }
-    } catch {}
+const readFontOrThrow = async (path: string) => {
+  try {
+    const bytes = await readFile(path)
+    return { bytes, path }
+  } catch {
+    throw new Error(`Font not found: ${path}`)
   }
-  throw new Error("No usable font file found")
 }
 
 export async function GET(
@@ -73,7 +72,7 @@ export async function GET(
   { params }: { params: Promise<{ classId: string }> }
 ) {
   try {
-    const user = await requireRole("WYCHOWAWCA")
+    const user = await requireRole("HOMEROOM")
     const { classId } = await params
     const { searchParams } = new URL(request.url)
     const schoolYearId = searchParams.get("schoolYearId")
@@ -94,7 +93,7 @@ export async function GET(
       where: { id: classId },
       include: {
         schoolYear: true,
-        teacher: true,
+        homeroomTeacher: true,
         students: {
           orderBy: [
             { lastName: "asc" },
@@ -129,18 +128,8 @@ export async function GET(
       },
     })
 
-    const fontFile = await readFirstAvailableFont([
-      join(process.cwd(), "public", "fonts", "DejaVuSans.ttf"),
-      "/usr/share/fonts/dejavu/DejaVuSans.ttf",
-      "/System/Library/Fonts/Supplemental/Arial Unicode.ttf",
-      join(process.cwd(), "public", "fonts", "Roboto-Regular.ttf"),
-    ])
-    const boldFontFile = await readFirstAvailableFont([
-      join(process.cwd(), "public", "fonts", "DejaVuSans-Bold.ttf"),
-      "/usr/share/fonts/dejavu/DejaVuSans-Bold.ttf",
-      "/System/Library/Fonts/Supplemental/Arial Bold.ttf",
-      join(process.cwd(), "public", "fonts", "Roboto-Bold.ttf"),
-    ])
+    const fontFile = await readFontOrThrow("/usr/share/fonts/dejavu/DejaVuSans.ttf")
+    const boldFontFile = await readFontOrThrow("/usr/share/fonts/dejavu/DejaVuSans-Bold.ttf")
 
     if (format === "single") {
       // Jeden wielostronicowy PDF
@@ -182,7 +171,7 @@ export async function GET(
           font: boldFont,
         })
         page.drawText(
-          `${class_.teacher?.firstName || ""} ${class_.teacher?.lastName || ""}`,
+          `${class_.homeroomTeacher?.firstName || ""} ${class_.homeroomTeacher?.lastName || ""}`,
           {
           x: margin + 120,
           y,
@@ -361,7 +350,7 @@ export async function GET(
           size: 12,
           font: boldFont,
         })
-        page.drawText(`${class_.teacher?.firstName || ""} ${class_.teacher?.lastName || ""}`, {
+        page.drawText(`${class_.homeroomTeacher?.firstName || ""} ${class_.homeroomTeacher?.lastName || ""}`, {
           x: margin + 120,
           y,
           size: 12,

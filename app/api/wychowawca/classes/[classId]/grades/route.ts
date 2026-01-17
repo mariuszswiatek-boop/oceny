@@ -7,7 +7,7 @@ export async function GET(
   { params }: { params: Promise<{ classId: string }> }
 ) {
   try {
-    const user = await requireRole("WYCHOWAWCA")
+    const user = await requireRole("HOMEROOM")
     const { classId } = await params
     const { searchParams } = new URL(request.url)
     const schoolYearId = searchParams.get("schoolYearId")

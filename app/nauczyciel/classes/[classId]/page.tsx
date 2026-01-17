@@ -52,7 +52,7 @@ export default function ClassPage() {
       return
     }
 
-    if (status === "authenticated" && session?.user.role !== "NAUCZYCIEL") {
+    if (status === "authenticated" && session?.user.role !== "TEACHER") {
       router.push("/unauthorized")
       return
     }

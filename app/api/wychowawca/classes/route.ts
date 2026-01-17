@@ -4,11 +4,11 @@ import { prisma } from "@/lib/prisma"
 
 export async function GET() {
   try {
-    const user = await requireRole("WYCHOWAWCA")
+    const user = await requireRole("HOMEROOM")
 
     const classes = await prisma.class.findMany({
       where: {
-        teacherId: user.id,
+        homeroomTeacherId: user.id,
       },
       include: {
         schoolYear: true,

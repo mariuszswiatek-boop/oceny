@@ -59,7 +59,7 @@ export async function canTeacherAccessClassAsHomeroom(teacherId: string, classId
   const class_ = await prisma.class.findFirst({
     where: {
       id: classId,
-      teacherId,
+      homeroomTeacherId: teacherId,
     },
   })
   return !!class_

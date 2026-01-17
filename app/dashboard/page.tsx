@@ -12,9 +12,9 @@ export default async function DashboardPage() {
 
   if (role === "ADMIN") {
     redirect("/admin")
-  } else if (role === "NAUCZYCIEL") {
+  } else if (role === "TEACHER") {
     redirect("/nauczyciel")
-  } else if (role === "WYCHOWAWCA") {
+  } else if (role === "HOMEROOM") {
     redirect("/wychowawca")
   } else {
     redirect("/login")

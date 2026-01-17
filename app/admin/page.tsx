@@ -95,24 +95,33 @@ export default function AdminPage() {
         </div>
 
         <div className="grid gap-4 md:grid-cols-2">
-          <div className="rounded-lg bg-white p-6 shadow">
-            <h2 className="text-xl font-semibold text-gray-900">Słowniki</h2>
+          <Link href="/admin/settings" className="rounded-lg bg-white p-6 shadow hover:shadow-md">
+            <h2 className="text-xl font-semibold text-gray-900">Ustawienia / Słowniki</h2>
             <p className="mt-2 text-sm text-gray-600">
-              Zarządzanie przedmiotami, klasami, skalą ocen i rokiem szkolnym
+              Rok szkolny, klasy, przedmioty, skala ocen.
             </p>
-            <p className="mt-4 text-sm text-gray-500">
-              (Funkcjonalność w przygotowaniu)
-            </p>
-          </div>
-          <div className="rounded-lg bg-white p-6 shadow">
+          </Link>
+          <Link href="/admin/users" className="rounded-lg bg-white p-6 shadow hover:shadow-md">
             <h2 className="text-xl font-semibold text-gray-900">Użytkownicy</h2>
             <p className="mt-2 text-sm text-gray-600">
-              Zarządzanie nauczycielami i przypisaniami
+              Dodawanie kont, role, reset hasła, blokady.
             </p>
-            <p className="mt-4 text-sm text-gray-500">
-              (Funkcjonalność w przygotowaniu)
+          </Link>
+          <Link
+            href="/admin/assignments"
+            className="rounded-lg bg-white p-6 shadow hover:shadow-md"
+          >
+            <h2 className="text-xl font-semibold text-gray-900">Przypisania</h2>
+            <p className="mt-2 text-sm text-gray-600">
+              Przedmiot → klasa → nauczyciel → rok szkolny.
             </p>
-          </div>
+          </Link>
+          <Link href="/admin/students" className="rounded-lg bg-white p-6 shadow hover:shadow-md">
+            <h2 className="text-xl font-semibold text-gray-900">Uczniowie i rodzice</h2>
+            <p className="mt-2 text-sm text-gray-600">
+              Lista uczniów, kontakty rodziców, archiwizacja.
+            </p>
+          </Link>
         </div>
       </div>
     </div>

@@ -93,18 +93,18 @@ Po uruchomieniu seed, możesz zalogować się używając następujących kont:
 ### Wychowawca
 - **Email**: `wychowawca@szkola.pl`
 - **Hasło**: `password123`
-- **Rola**: WYCHOWAWCA
+- **Rola**: HOMEROOM
 
 ### Nauczyciel 1
 - **Email**: `nauczyciel1@szkola.pl`
 - **Hasło**: `password123`
-- **Rola**: NAUCZYCIEL
+- **Rola**: TEACHER
 - **Przedmioty**: Język polski, Historia
 
 ### Nauczyciel 2
 - **Email**: `nauczyciel2@szkola.pl`
 - **Hasło**: `password123`
-- **Rola**: NAUCZYCIEL
+- **Rola**: TEACHER
 - **Przedmioty**: Matematyka, Przyroda/Biologia
 
 ## Role i uprawnienia
@@ -116,13 +116,13 @@ Po uruchomieniu seed, możesz zalogować się używając następujących kont:
 - Przypisania wychowawców do klas
 - Eksport PDF
 
-### NAUCZYCIEL
+### TEACHER
 - Widzi tylko swoje przedmioty
 - Widzi tylko klasy/uczniów, do których jest przypisany
 - Może wprowadzać/zmieniać oceny z "jego" przedmiotu
 - Autosave przy zmianie oceny
 
-### WYCHOWAWCA
+### HOMEROOM
 - Widzi całą swoją klasę (uczniów)
 - Widzi oceny ze wszystkich przedmiotów dla swojej klasy
 - Może generować PDF dla uczniów w swojej klasie (pojedynczy lub cała klasa)
@@ -197,7 +197,7 @@ Po uruchomieniu seed, możesz zalogować się używając następujących kont:
 ### PDF
 - Układ zgodny z wymaganiami
 - Nagłówek: "ROK SZKOLNY" i "OCENY ŚRÓDROCZNE"
-- Pola: WYCHOWAWCA, IMIĘ I NAZWISKO UCZNIA, KLASA
+- Pola: HOMEROOM, IMIĘ I NAZWISKO UCZNIA, KLASA
 - Tabela z przedmiotami i kolumnami ocen (zaznaczenie kółkiem w odpowiednim kolorze)
 - Kolumna "Podpis nauczyciela"
 

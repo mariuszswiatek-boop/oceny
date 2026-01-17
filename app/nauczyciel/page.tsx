@@ -75,7 +75,7 @@ export default function NauczycielPage() {
       return
     }
 
-    if (status === "authenticated" && session?.user.role !== "NAUCZYCIEL") {
+    if (status === "authenticated" && session?.user.role !== "TEACHER") {
       router.push("/unauthorized")
       return
     }

@@ -12,7 +12,7 @@ const gradeSchema = z.object({
 
 export async function POST(request: Request) {
   try {
-    const user = await requireRole("NAUCZYCIEL")
+    const user = await requireRole("TEACHER")
     const body = await request.json()
     const data = gradeSchema.parse(body)
 
@@ -80,7 +80,7 @@ export async function POST(request: Request) {
 // Pobierz oceny dla klasy i przedmiotu
 export async function GET(request: Request) {
   try {
-    const user = await requireRole("NAUCZYCIEL")
+    const user = await requireRole("TEACHER")
     const { searchParams } = new URL(request.url)
     const classId = searchParams.get("classId")
     const subjectId = searchParams.get("subjectId")

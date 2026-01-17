@@ -4,7 +4,7 @@ import { prisma } from "@/lib/prisma"
 
 export async function GET() {
   try {
-    await requireRole("NAUCZYCIEL")
+    await requireRole("TEACHER")
 
     const gradeScales = await prisma.montessoriGradeScale.findMany({
       orderBy: {

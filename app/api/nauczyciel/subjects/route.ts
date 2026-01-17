@@ -4,7 +4,7 @@ import { prisma } from "@/lib/prisma"
 
 export async function GET() {
   try {
-    const user = await requireRole("NAUCZYCIEL")
+    const user = await requireRole("TEACHER")
 
     const subjects = await prisma.subject.findMany({
       where: {

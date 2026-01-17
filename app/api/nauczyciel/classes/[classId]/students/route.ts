@@ -7,7 +7,7 @@ export async function GET(
   { params }: { params: Promise<{ classId: string }> }
 ) {
   try {
-    const user = await requireRole("NAUCZYCIEL")
+    const user = await requireRole("TEACHER")
     const { classId } = await params
 
     // Sprawdź uprawnienia

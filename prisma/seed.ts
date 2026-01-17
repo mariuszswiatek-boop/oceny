@@ -10,38 +10,42 @@ async function main() {
   const gradeScales = await Promise.all([
     prisma.montessoriGradeScale.upsert({
       where: { label: "NIE/SŁABO OPANOWAŁ" },
-      update: {},
+      update: { colorHex: "#FF0000", sortOrder: 1, isActive: true },
       create: {
         label: "NIE/SŁABO OPANOWAŁ",
         colorHex: "#FF0000", // czerwony
         sortOrder: 1,
+        isActive: true,
       },
     }),
     prisma.montessoriGradeScale.upsert({
       where: { label: "ŚREDNIO OPANOWAŁ" },
-      update: {},
+      update: { colorHex: "#FFFF00", sortOrder: 2, isActive: true },
       create: {
         label: "ŚREDNIO OPANOWAŁ",
         colorHex: "#FFFF00", // żółty
         sortOrder: 2,
+        isActive: true,
       },
     }),
     prisma.montessoriGradeScale.upsert({
       where: { label: "DOBRZE OPANOWAŁ" },
-      update: {},
+      update: { colorHex: "#90EE90", sortOrder: 3, isActive: true },
       create: {
         label: "DOBRZE OPANOWAŁ",
         colorHex: "#90EE90", // zielony jasny
         sortOrder: 3,
+        isActive: true,
       },
     }),
     prisma.montessoriGradeScale.upsert({
       where: { label: "DOSKONALE OPANOWAŁ" },
-      update: {},
+      update: { colorHex: "#006400", sortOrder: 4, isActive: true },
       create: {
         label: "DOSKONALE OPANOWAŁ",
         colorHex: "#006400", // zielony mocny
         sortOrder: 4,
+        isActive: true,
       },
     }),
   ])
@@ -49,90 +53,44 @@ async function main() {
   console.log("Created grade scales")
 
   // Przedmioty
-  const subjects = await Promise.all([
-    prisma.subject.upsert({
-      where: { name: "Język polski" },
-      update: {},
-      create: { name: "Język polski" },
-    }),
-    prisma.subject.upsert({
-      where: { name: "Język angielski" },
-      update: {},
-      create: { name: "Język angielski" },
-    }),
-    prisma.subject.upsert({
-      where: { name: "Język hiszpański" },
-      update: {},
-      create: { name: "Język hiszpański" },
-    }),
-    prisma.subject.upsert({
-      where: { name: "Matematyka" },
-      update: {},
-      create: { name: "Matematyka" },
-    }),
-    prisma.subject.upsert({
-      where: { name: "Historia" },
-      update: {},
-      create: { name: "Historia" },
-    }),
-    prisma.subject.upsert({
-      where: { name: "Przyroda/Biologia" },
-      update: {},
-      create: { name: "Przyroda/Biologia" },
-    }),
-    prisma.subject.upsert({
-      where: { name: "Geografia" },
-      update: {},
-      create: { name: "Geografia" },
-    }),
-    prisma.subject.upsert({
-      where: { name: "Chemia" },
-      update: {},
-      create: { name: "Chemia" },
-    }),
-    prisma.subject.upsert({
-      where: { name: "Fizyka" },
-      update: {},
-      create: { name: "Fizyka" },
-    }),
-    prisma.subject.upsert({
-      where: { name: "Informatyka" },
-      update: {},
-      create: { name: "Informatyka" },
-    }),
-    prisma.subject.upsert({
-      where: { name: "Technika" },
-      update: {},
-      create: { name: "Technika" },
-    }),
-    prisma.subject.upsert({
-      where: { name: "Muzyka" },
-      update: {},
-      create: { name: "Muzyka" },
-    }),
-    prisma.subject.upsert({
-      where: { name: "Plastyka" },
-      update: {},
-      create: { name: "Plastyka" },
-    }),
-    prisma.subject.upsert({
-      where: { name: "WF" },
-      update: {},
-      create: { name: "WF" },
-    }),
-  ])
+  const subjectSeeds = [
+    "Język polski",
+    "Język angielski",
+    "Język hiszpański",
+    "Muzyka",
+    "Plastyka",
+    "Historia",
+    "Przyroda / Biologia",
+    "Geografia",
+    "Chemia",
+    "Fizyka",
+    "Matematyka",
+    "Informatyka",
+    "Technika",
+    "Wychowanie fizyczne",
+  ]
+  const subjects = await Promise.all(
+    subjectSeeds.map((name, idx) =>
+      prisma.subject.upsert({
+        where: { name },
+        update: { sortOrder: idx + 1, isActive: true },
+        create: { name, sortOrder: idx + 1, isActive: true },
+      })
+    )
+  )
 
   console.log("Created subjects")
 
   // Rok szkolny
   const schoolYear = await prisma.schoolYear.upsert({
-    where: { name: "2023/2024" },
-    update: {},
+    where: { name: "2025/2026" },
+    update: { isActive: true, sortOrder: 1 },
     create: {
-      name: "2023/2024",
-      startDate: new Date("2023-09-01"),
-      endDate: new Date("2024-06-30"),
+      name: "2025/2026",
+      startDate: new Date("2025-09-01"),
+      endDate: new Date("2026-06-30"),
       isActive: true,
+      sortOrder: 1,
     },
   })
 
@@ -143,49 +101,53 @@ async function main() {
 
   const admin = await prisma.user.upsert({
     where: { email: "admin@szkola.pl" },
-    update: {},
+    update: { role: "ADMIN", isActive: true },
     create: {
       email: "admin@szkola.pl",
       password: hashedPassword,
       firstName: "Jan",
       lastName: "Admin",
       role: "ADMIN",
+      isActive: true,
     },
   })
 
   const wychowawca = await prisma.user.upsert({
     where: { email: "wychowawca@szkola.pl" },
-    update: {},
+    update: { role: "HOMEROOM", isActive: true },
     create: {
       email: "wychowawca@szkola.pl",
       password: hashedPassword,
       firstName: "Anna",
       lastName: "Wychowawczyni",
-      role: "WYCHOWAWCA",
+      role: "HOMEROOM",
+      isActive: true,
     },
   })
 
   const nauczyciel1 = await prisma.user.upsert({
     where: { email: "nauczyciel1@szkola.pl" },
-    update: {},
+    update: { role: "TEACHER", isActive: true },
     create: {
       email: "nauczyciel1@szkola.pl",
       password: hashedPassword,
       firstName: "Piotr",
       lastName: "Nauczyciel",
-      role: "NAUCZYCIEL",
+      role: "TEACHER",
+      isActive: true,
     },
   })
 
   const nauczyciel2 = await prisma.user.upsert({
     where: { email: "nauczyciel2@szkola.pl" },
-    update: {},
+    update: { role: "TEACHER", isActive: true },
     create: {
       email: "nauczyciel2@szkola.pl",
       password: hashedPassword,
       firstName: "Maria",
       lastName: "Nauczycielka",
-      role: "NAUCZYCIEL",
+      role: "TEACHER",
+      isActive: true,
     },
   })
 
@@ -194,12 +156,14 @@ async function main() {
   // Klasa
   const class_ = await prisma.class.upsert({
     where: { id: "class-2a" },
-    update: {},
+    update: { isActive: true, sortOrder: 1, homeroomTeacherId: wychowawca.id },
     create: {
       id: "class-2a",
       name: "2A",
       schoolYearId: schoolYear.id,
-      teacherId: wychowawca.id,
+      homeroomTeacherId: wychowawca.id,
+      sortOrder: 1,
+      isActive: true,
     },
   })
 
@@ -211,6 +175,7 @@ async function main() {
       firstName: "Jan",
       lastName: "Kowalski",
       classId: class_.id,
+      isActive: true,
     },
   })
 
@@ -219,6 +184,7 @@ async function main() {
       firstName: "Anna",
       lastName: "Nowak",
       classId: class_.id,
+      isActive: true,
     },
   })
 
@@ -227,6 +193,7 @@ async function main() {
       firstName: "Piotr",
       lastName: "Wiśniewski",
       classId: class_.id,
+      isActive: true,
     },
   })
 
@@ -238,20 +205,23 @@ async function main() {
       {
         studentId: student1.id,
         email: "rodzic1@example.com",
-        firstName: "Tomasz",
-        lastName: "Kowalski",
+        fullName: "Tomasz Kowalski",
+        phone: "+48 600 111 111",
+        isPrimary: true,
       },
       {
         studentId: student2.id,
         email: "rodzic2@example.com",
-        firstName: "Ewa",
-        lastName: "Nowak",
+        fullName: "Ewa Nowak",
+        phone: "+48 600 222 222",
+        isPrimary: true,
       },
       {
         studentId: student3.id,
         email: "rodzic3@example.com",
-        firstName: "Marek",
-        lastName: "Wiśniewski",
+        fullName: "Marek Wiśniewski",
+        phone: "+48 600 333 333",
+        isPrimary: true,
       },
     ],
     skipDuplicates: true,
@@ -266,21 +236,25 @@ async function main() {
         teacherId: nauczyciel1.id,
         subjectId: subjects.find((s) => s.name === "Język polski")!.id,
         classId: class_.id,
+        schoolYearId: schoolYear.id,
       },
       {
         teacherId: nauczyciel1.id,
         subjectId: subjects.find((s) => s.name === "Historia")!.id,
         classId: class_.id,
+        schoolYearId: schoolYear.id,
       },
       {
         teacherId: nauczyciel2.id,
         subjectId: subjects.find((s) => s.name === "Matematyka")!.id,
         classId: class_.id,
+        schoolYearId: schoolYear.id,
       },
       {
         teacherId: nauczyciel2.id,
-        subjectId: subjects.find((s) => s.name === "Przyroda/Biologia")!.id,
+        subjectId: subjects.find((s) => s.name === "Przyroda / Biologia")!.id,
         classId: class_.id,
+        schoolYearId: schoolYear.id,
       },
     ],
     skipDuplicates: true,

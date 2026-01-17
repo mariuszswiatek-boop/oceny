@@ -57,14 +57,13 @@ const drawCenteredText = (
   page.drawText(text, { x: x - textWidth / 2, y, size, font })
 }
 
-const readFirstAvailableFont = async (candidates: string[]) => {
-  for (const candidate of candidates) {
-    try {
-      const bytes = await readFile(candidate)
-      return { bytes, path: candidate }
-    } catch {}
+const readFontOrThrow = async (path: string) => {
+  try {
+    const bytes = await readFile(path)
+    return { bytes, path }
+  } catch {
+    throw new Error(`Font not found: ${path}`)
   }
-  throw new Error("No usable font file found")
 }
 
 export async function GET(
@@ -72,7 +71,7 @@ export async function GET(
   { params }: { params: Promise<{ classId: string; studentId: string }> }
 ) {
   try {
-    const user = await requireRole("WYCHOWAWCA")
+    const user = await requireRole("HOMEROOM")
     const { classId, studentId } = await params
     const { searchParams } = new URL(request.url)
     const schoolYearId = searchParams.get("schoolYearId")
@@ -98,7 +97,7 @@ export async function GET(
       include: {
         class: {
           include: {
-            teacher: true,
+            homeroomTeacher: true,
             schoolYear: true,
           },
         },
@@ -132,18 +131,8 @@ export async function GET(
     const pdfDoc = await PDFDocument.create()
     pdfDoc.registerFontkit(fontkit)
     let page = pdfDoc.addPage([595, 842]) // A4
-    const fontFile = await readFirstAvailableFont([
-      join(process.cwd(), "public", "fonts", "DejaVuSans.ttf"),
-      "/usr/share/fonts/dejavu/DejaVuSans.ttf",
-      "/System/Library/Fonts/Supplemental/Arial Unicode.ttf",
-      join(process.cwd(), "public", "fonts", "Roboto-Regular.ttf"),
-    ])
-    const boldFontFile = await readFirstAvailableFont([
-      join(process.cwd(), "public", "fonts", "DejaVuSans-Bold.ttf"),
-      "/usr/share/fonts/dejavu/DejaVuSans-Bold.ttf",
-      "/System/Library/Fonts/Supplemental/Arial Bold.ttf",
-      join(process.cwd(), "public", "fonts", "Roboto-Bold.ttf"),
-    ])
+    const fontFile = await readFontOrThrow("/usr/share/fonts/dejavu/DejaVuSans.ttf")
+    const boldFontFile = await readFontOrThrow("/usr/share/fonts/dejavu/DejaVuSans-Bold.ttf")
     console.log("PDF font:", fontFile.path)
     console.log("PDF bold font:", boldFontFile.path)
     const font = await pdfDoc.embedFont(fontFile.bytes)
@@ -179,7 +168,7 @@ export async function GET(
       font: boldFont,
     })
     page.drawText(
-      `${student.class.teacher?.firstName || ""} ${student.class.teacher?.lastName || ""}`,
+      `${student.class.homeroomTeacher?.firstName || ""} ${student.class.homeroomTeacher?.lastName || ""}`,
       {
         x: margin + 120,
         y,

@@ -21,11 +21,11 @@ export async function middleware(request: NextRequest) {
     return NextResponse.redirect(new URL("/unauthorized", request.url))
   }
 
-  if (path.startsWith("/nauczyciel") && token.role !== "NAUCZYCIEL") {
+  if (path.startsWith("/nauczyciel") && token.role !== "TEACHER") {
     return NextResponse.redirect(new URL("/unauthorized", request.url))
   }
 
-  if (path.startsWith("/wychowawca") && token.role !== "WYCHOWAWCA") {
+  if (path.startsWith("/wychowawca") && token.role !== "HOMEROOM") {
     return NextResponse.redirect(new URL("/unauthorized", request.url))
   }
 
