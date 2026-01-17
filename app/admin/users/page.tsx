@@ -151,7 +151,7 @@ export default function AdminUsersPage() {
         )}
 
         <section className="rounded-lg bg-white p-6 shadow">
-          <h2 className="text-xl font-semibold text-gray-900">Dodaj użytkownika</h2>
+          <h2 className="text-xl font-semibold text-slate-900">Dodaj użytkownika</h2>
           <div className="mt-4 grid gap-4 md:grid-cols-3">
             <input
               className={fieldClass}
@@ -198,11 +198,11 @@ export default function AdminUsersPage() {
         </section>
 
         <section className="rounded-lg bg-white p-6 shadow">
-          <h2 className="text-xl font-semibold text-gray-900">Lista użytkowników</h2>
+          <h2 className="text-xl font-semibold text-slate-900">Lista użytkowników</h2>
           <div className="mt-4 overflow-x-auto">
             <table className="w-full text-sm">
               <thead>
-                <tr className="text-left text-gray-500">
+                <tr className="text-left text-slate-700">
                   <th className="py-2">Użytkownik</th>
                   <th>Email</th>
                   <th>Rola</th>
@@ -210,14 +210,14 @@ export default function AdminUsersPage() {
                   <th></th>
                 </tr>
               </thead>
-              <tbody>
+              <tbody className="text-slate-900">
                 {users.map((user) => (
                   <tr key={user.id} className="border-t">
-                    <td className="py-2">
+                    <td className="py-2 text-slate-900">
                       {user.firstName} {user.lastName}
                     </td>
-                    <td>{user.email}</td>
-                    <td>{user.role}</td>
+                    <td className="text-slate-900">{user.email}</td>
+                    <td className="text-slate-900">{user.role}</td>
                     <td>
                       <span className={user.isActive ? "text-green-600" : "text-gray-500"}>
                         {user.isActive ? "Aktywny" : "Zablokowany"}

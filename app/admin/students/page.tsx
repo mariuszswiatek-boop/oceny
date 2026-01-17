@@ -223,7 +223,7 @@ export default function AdminStudentsPage() {
         )}
 
         <section className="rounded-lg bg-white p-6 shadow">
-          <h2 className="text-xl font-semibold text-gray-900">Filtry</h2>
+          <h2 className="text-xl font-semibold text-slate-900">Filtry</h2>
           <div className="mt-4 grid gap-4 md:grid-cols-3">
             <select
               className={fieldClass}
@@ -247,7 +247,7 @@ export default function AdminStudentsPage() {
         </section>
 
         <section className="rounded-lg bg-white p-6 shadow">
-          <h2 className="text-xl font-semibold text-gray-900">Dodaj ucznia</h2>
+          <h2 className="text-xl font-semibold text-slate-900">Dodaj ucznia</h2>
           <div className="mt-4 grid gap-4 md:grid-cols-4">
             <input
               className={fieldClass}
@@ -283,24 +283,24 @@ export default function AdminStudentsPage() {
         </section>
 
         <section className="rounded-lg bg-white p-6 shadow">
-          <h2 className="text-xl font-semibold text-gray-900">Lista uczniów</h2>
+          <h2 className="text-xl font-semibold text-slate-900">Lista uczniów</h2>
           <div className="mt-4 overflow-x-auto">
             <table className="w-full text-sm">
               <thead>
-                <tr className="text-left text-gray-500">
+                <tr className="text-left text-slate-700">
                   <th className="py-2">Uczeń</th>
                   <th>Klasa</th>
                   <th>Status</th>
                   <th></th>
                 </tr>
               </thead>
-              <tbody>
+              <tbody className="text-slate-900">
                 {students.map((student) => (
                   <tr key={student.id} className="border-t">
-                    <td className="py-2">
+                    <td className="py-2 text-slate-900">
                       {student.firstName} {student.lastName}
                     </td>
-                    <td>{student.class?.name}</td>
+                    <td className="text-slate-900">{student.class?.name}</td>
                     <td>
                       <span className={student.isActive ? "text-green-600" : "text-gray-500"}>
                         {student.isActive ? "Aktywny" : "Archiwalny"}
@@ -346,7 +346,7 @@ export default function AdminStudentsPage() {
         {selectedStudent && (
           <section className="rounded-lg bg-white p-6 shadow">
             <div className="flex items-center justify-between">
-              <h2 className="text-xl font-semibold text-gray-900">
+              <h2 className="text-xl font-semibold text-slate-900">
                 Kontakty rodziców: {selectedStudent.firstName} {selectedStudent.lastName}
               </h2>
               <button
@@ -384,8 +384,8 @@ export default function AdminStudentsPage() {
             </div>
             <div className="mt-4 overflow-x-auto">
               <table className="w-full text-sm">
-                <thead>
-                  <tr className="text-left text-gray-500">
+              <thead>
+                <tr className="text-left text-slate-700">
                     <th className="py-2">Email</th>
                     <th>Kontakt</th>
                     <th>Telefon</th>
@@ -393,12 +393,12 @@ export default function AdminStudentsPage() {
                     <th></th>
                   </tr>
                 </thead>
-                <tbody>
+              <tbody className="text-slate-900">
                   {contacts.map((contact) => (
                     <tr key={contact.id} className="border-t">
-                      <td className="py-2">{contact.email}</td>
-                      <td>{contact.fullName ?? "-"}</td>
-                      <td>{contact.phone ?? "-"}</td>
+                    <td className="py-2 text-slate-900">{contact.email}</td>
+                    <td className="text-slate-900">{contact.fullName ?? "-"}</td>
+                    <td className="text-slate-900">{contact.phone ?? "-"}</td>
                       <td>{contact.isPrimary ? "Tak" : "Nie"}</td>
                       <td>
                         <button
