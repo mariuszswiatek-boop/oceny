@@ -11,6 +11,8 @@ try { appendFileSync('/Users/mariuszswiatek/oceny/.cursor/debug.log', JSON.strin
 // #endregion
 
 export const authOptions: NextAuthConfig = {
+  secret: process.env.NEXTAUTH_SECRET ?? process.env.AUTH_SECRET,
+  trustHost: true,
   providers: [
     CredentialsProvider({
       name: "Credentials",

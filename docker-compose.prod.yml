@@ -1,6 +1,21 @@
 version: '3.8'
 
 services:
+  caddy:
+    image: caddy:2-alpine
+    container_name: oceny-caddy
+    restart: unless-stopped
+    ports:
+      - "3000:3000"
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./Caddyfile:/etc/caddy/Caddyfile:ro
+      - caddy_data:/data
+      - caddy_config:/config
+    depends_on:
+      - app
+
   postgres:
     image: postgres:15-alpine
     container_name: oceny-postgres
@@ -23,11 +38,11 @@ services:
     restart: unless-stopped
     env_file:
       - .env.production
-    ports:
-      - "3000:3000"
     depends_on:
       postgres:
         condition: service_healthy
 
 volumes:
+  caddy_data:
+  caddy_config:
   postgres_data:
