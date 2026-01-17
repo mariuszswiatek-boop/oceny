@@ -3,16 +3,14 @@ import CredentialsProvider from "next-auth/providers/credentials"
 import { prisma } from "./prisma"
 import bcrypt from "bcryptjs"
 import { UserRole } from "@prisma/client"
-import { appendFileSync } from "fs"
 import { z } from "zod"
 
-// #region agent log
-try { appendFileSync('/Users/mariuszswiatek/oceny/.cursor/debug.log', JSON.stringify({location:'lib/auth.ts:7',message:'Loading authOptions, importing prisma',data:{timestamp:Date.now()},sessionId:'debug-session',runId:'run1',hypothesisId:'C'})+'\n'); } catch(e){}
-// #endregion
+const isAuthDebug = process.env.AUTH_DEBUG === "true"
 
 export const authOptions: NextAuthConfig = {
   secret: process.env.NEXTAUTH_SECRET ?? process.env.AUTH_SECRET,
   trustHost: true,
+  debug: process.env.NEXTAUTH_DEBUG === "true",
   providers: [
     CredentialsProvider({
       name: "Credentials",
@@ -27,6 +25,9 @@ export const authOptions: NextAuthConfig = {
         })
         const parsedCredentials = credentialsSchema.safeParse(credentials)
         if (!parsedCredentials.success) {
+          if (isAuthDebug) {
+            console.warn("AUTH_DEBUG invalid credentials payload")
+          }
           return null
         }
         const { email, password } = parsedCredentials.data
@@ -36,12 +37,18 @@ export const authOptions: NextAuthConfig = {
         })
 
         if (!user) {
+          if (isAuthDebug) {
+            console.warn("AUTH_DEBUG user not found", { email })
+          }
           return null
         }
 
         const isPasswordValid = await bcrypt.compare(password, user.password)
 
         if (!isPasswordValid) {
+          if (isAuthDebug) {
+            console.warn("AUTH_DEBUG invalid password", { email })
+          }
           return null
         }
 
