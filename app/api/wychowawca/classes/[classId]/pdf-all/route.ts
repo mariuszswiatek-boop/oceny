@@ -1,8 +1,15 @@
 import { NextResponse } from "next/server"
 import { requireRole, canTeacherAccessClassAsHomeroom } from "@/lib/permissions"
 import { prisma } from "@/lib/prisma"
+import JSZip from "jszip"
 import { renderPdfFromHtml } from "@/lib/pdf/playwright"
-import { buildClassPdfHtml } from "@/lib/pdf/montessori"
+import { buildStudentPdfHtml } from "@/lib/pdf/montessori"
+
+const toSafeFilename = (value: string) =>
+  value
+    .trim()
+    .replace(/[\\/?%*:|"<>]/g, "")
+    .replace(/\s+/g, "_")
 
 export async function GET(
   request: Request,
@@ -60,35 +67,45 @@ export async function GET(
       }),
     ])
 
-    const html = buildClassPdfHtml({
-      students: class_.students.map((student) => ({
-        id: student.id,
-        firstName: student.firstName,
-        lastName: student.lastName,
-      })),
-      classInfo: {
-        name: class_.name,
-        schoolYearName: class_.schoolYear.name,
-        homeroomName: `${class_.teacher?.firstName || ""} ${
-          class_.teacher?.lastName || ""
-        }`.trim(),
-      },
-      subjects,
-      gradeScales,
-      grades,
-    })
+    const classInfo = {
+      name: class_.name,
+      schoolYearName: class_.schoolYear.name,
+      homeroomName: `${class_.teacher?.firstName || ""} ${class_.teacher?.lastName || ""}`.trim(),
+    }
+    const zip = new JSZip()
 
-    const pdfBuffer = await renderPdfFromHtml(html)
-    const pdfArrayBuffer = pdfBuffer.buffer.slice(
-      pdfBuffer.byteOffset,
-      pdfBuffer.byteOffset + pdfBuffer.byteLength
+    for (const student of class_.students) {
+      const studentGrades = grades.filter((grade) => grade.studentId === student.id)
+      const html = buildStudentPdfHtml({
+        student: {
+          id: student.id,
+          firstName: student.firstName,
+          lastName: student.lastName,
+        },
+        classInfo,
+        subjects,
+        gradeScales,
+        grades: studentGrades,
+      })
+      const pdfBuffer = await renderPdfFromHtml(html)
+      const filename = toSafeFilename(
+        `oceny_${student.firstName}_${student.lastName}_${class_.name}.pdf`
+      )
+      zip.file(filename, pdfBuffer)
+    }
+
+    const zipBuffer = await zip.generateAsync({ type: "nodebuffer" })
+    const zipArrayBuffer = zipBuffer.buffer.slice(
+      zipBuffer.byteOffset,
+      zipBuffer.byteOffset + zipBuffer.byteLength
     ) as ArrayBuffer
-    const pdfBlob = new Blob([pdfArrayBuffer], { type: "application/pdf" })
+    const zipBlob = new Blob([zipArrayBuffer], { type: "application/zip" })
+    const zipFilename = toSafeFilename(`oceny_${class_.name}.zip`)
 
-    return new NextResponse(pdfBlob, {
+    return new NextResponse(zipBlob, {
       headers: {
-        "Content-Type": "application/pdf",
-        "Content-Disposition": `attachment; filename="oceny_${class_.name}_${class_.schoolYear.name}.pdf"`,
+        "Content-Type": "application/zip",
+        "Content-Disposition": `attachment; filename="${zipFilename}"`,
       },
     })
   } catch (error: any) {

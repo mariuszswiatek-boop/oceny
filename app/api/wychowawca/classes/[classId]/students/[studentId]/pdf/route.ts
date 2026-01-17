@@ -2,6 +2,12 @@ import { NextResponse } from "next/server"
 import { requireRole, canTeacherAccessClassAsHomeroom, isStudentInClass } from "@/lib/permissions"
 import { prisma } from "@/lib/prisma"
 import { renderPdfFromHtml } from "@/lib/pdf/playwright"
+
+const toSafeFilename = (value: string) =>
+  value
+    .trim()
+    .replace(/[\\/?%*:|"<>]/g, "")
+    .replace(/\s+/g, "_")
 import { buildStudentPdfHtml } from "@/lib/pdf/montessori"
 
 export async function GET(
@@ -91,10 +97,14 @@ export async function GET(
     ) as ArrayBuffer
     const pdfBlob = new Blob([pdfArrayBuffer], { type: "application/pdf" })
 
+    const filename = toSafeFilename(
+      `oceny_${student.firstName}_${student.lastName}_${student.class.name}.pdf`
+    )
+
     return new NextResponse(pdfBlob, {
       headers: {
         "Content-Type": "application/pdf",
-        "Content-Disposition": `attachment; filename="oceny_${student.firstName}_${student.lastName}_${student.class.schoolYear.name}.pdf"`,
+        "Content-Disposition": `attachment; filename="${filename}"`,
       },
     })
   } catch (error: any) {
