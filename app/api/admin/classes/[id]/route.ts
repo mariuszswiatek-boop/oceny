@@ -11,12 +11,16 @@ const updateSchema = z.object({
   isActive: z.boolean().optional(),
 })
 
-export async function PATCH(request: Request, { params }: { params: { id: string } }) {
+export async function PATCH(
+  request: Request,
+  { params }: { params: Promise<{ id: string }> }
+) {
   try {
     await requireRole("ADMIN")
+    const { id } = await params
     const data = updateSchema.parse(await request.json())
     const updated = await prisma.class.update({
-      where: { id: params.id },
+      where: { id },
       data,
     })
     return NextResponse.json(updated)
@@ -31,12 +35,16 @@ export async function PATCH(request: Request, { params }: { params: { id: string
   }
 }
 
-export async function DELETE(_: Request, { params }: { params: { id: string } }) {
+export async function DELETE(
+  _: Request,
+  { params }: { params: Promise<{ id: string }> }
+) {
   try {
     await requireRole("ADMIN")
+    const { id } = await params
     const [studentsCount, assignmentsCount] = await Promise.all([
-      prisma.student.count({ where: { classId: params.id } }),
-      prisma.teacherAssignment.count({ where: { classId: params.id } }),
+      prisma.student.count({ where: { classId: id } }),
+      prisma.teacherAssignment.count({ where: { classId: id } }),
     ])
     if (studentsCount > 0 || assignmentsCount > 0) {
       return NextResponse.json(
@@ -44,7 +52,7 @@ export async function DELETE(_: Request, { params }: { params: { id: string } })
         { status: 409 }
       )
     }
-    await prisma.class.delete({ where: { id: params.id } })
+    await prisma.class.delete({ where: { id } })
     return NextResponse.json({ success: true })
   } catch (error: any) {
     return NextResponse.json(
