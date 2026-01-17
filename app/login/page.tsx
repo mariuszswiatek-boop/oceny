@@ -43,7 +43,7 @@ export default function LoginPage() {
           <h2 className="mt-6 text-center text-3xl font-bold text-[var(--foreground)]">
             System Ocen Montessori
           </h2>
-          <p className="mt-2 text-center text-sm text-[var(--muted)]">
+          <p className="mt-2 text-center text-sm text-slate-600">
             Zaloguj się do systemu
           </p>
         </div>
@@ -55,7 +55,7 @@ export default function LoginPage() {
           )}
           <div className="space-y-4">
             <div>
-              <label htmlFor="email" className="block text-sm font-medium text-[var(--muted)]">
+              <label htmlFor="email" className="block text-sm font-medium text-slate-700">
                 Email
               </label>
               <input
@@ -65,11 +65,11 @@ export default function LoginPage() {
                 required
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
-                className="mt-1 block w-full rounded-md border border-[var(--border)] bg-[var(--surface)] px-3 py-2 text-[var(--foreground)] placeholder:text-[var(--muted)] shadow-sm focus:border-[var(--focus)] focus:outline-none focus:ring-[var(--focus)]/20"
+                className="mt-1 block w-full rounded-md border border-[var(--border)] bg-[var(--surface)] px-3 py-2 text-[var(--foreground)] placeholder:text-slate-400 shadow-sm focus:border-[var(--focus)] focus:outline-none focus:ring-[var(--focus)]/20"
               />
             </div>
             <div>
-              <label htmlFor="password" className="block text-sm font-medium text-[var(--muted)]">
+              <label htmlFor="password" className="block text-sm font-medium text-slate-700">
                 Hasło
               </label>
               <input
@@ -79,7 +79,7 @@ export default function LoginPage() {
                 required
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
-                className="mt-1 block w-full rounded-md border border-[var(--border)] bg-[var(--surface)] px-3 py-2 text-[var(--foreground)] placeholder:text-[var(--muted)] shadow-sm focus:border-[var(--focus)] focus:outline-none focus:ring-[var(--focus)]/20"
+                className="mt-1 block w-full rounded-md border border-[var(--border)] bg-[var(--surface)] px-3 py-2 text-[var(--foreground)] placeholder:text-slate-400 shadow-sm focus:border-[var(--focus)] focus:outline-none focus:ring-[var(--focus)]/20"
               />
             </div>
           </div>
