@@ -207,7 +207,7 @@ export default function AdminSettingsPage() {
         <div className="flex flex-wrap items-center justify-between gap-4">
           <div>
             <h1 className="text-3xl font-bold text-gray-900">Ustawienia / Słowniki</h1>
-            <p className="mt-2 text-sm text-gray-600">
+            <p className="mt-2 text-sm text-slate-700">
               Zarządzaj rokiem szkolnym, klasami, przedmiotami i skalą ocen.
             </p>
           </div>
@@ -231,7 +231,7 @@ export default function AdminSettingsPage() {
         )}
 
         <section className="rounded-lg bg-white p-6 shadow">
-          <h2 className="text-xl font-semibold text-gray-900">Rok szkolny</h2>
+          <h2 className="text-xl font-semibold text-slate-900">Rok szkolny</h2>
           <div className="mt-4 grid gap-4 md:grid-cols-5">
             <input
               className={fieldClass}
@@ -274,7 +274,7 @@ export default function AdminSettingsPage() {
           <div className="mt-4 overflow-x-auto">
             <table className="w-full text-sm">
               <thead>
-                <tr className="text-left text-gray-500">
+                <tr className="text-left text-slate-700">
                   <th className="py-2">Nazwa</th>
                   <th>Start</th>
                   <th>Koniec</th>
@@ -328,7 +328,7 @@ export default function AdminSettingsPage() {
         </section>
 
         <section className="rounded-lg bg-white p-6 shadow">
-          <h2 className="text-xl font-semibold text-gray-900">Przedmioty</h2>
+          <h2 className="text-xl font-semibold text-slate-900">Przedmioty</h2>
           <div className="mt-4 grid gap-4 md:grid-cols-4">
             <input
               className={fieldClass}
@@ -365,7 +365,7 @@ export default function AdminSettingsPage() {
           <div className="mt-4 overflow-x-auto">
             <table className="w-full text-sm">
               <thead>
-                <tr className="text-left text-gray-500">
+                <tr className="text-left text-slate-700">
                   <th className="py-2">Nazwa</th>
                   <th>Sort</th>
                   <th>Status</th>
@@ -415,7 +415,7 @@ export default function AdminSettingsPage() {
         </section>
 
         <section className="rounded-lg bg-white p-6 shadow">
-          <h2 className="text-xl font-semibold text-gray-900">Skala Montessori</h2>
+          <h2 className="text-xl font-semibold text-slate-900">Skala Montessori</h2>
           <div className="mt-4 grid gap-4 md:grid-cols-4">
             <input
               className={fieldClass}
@@ -452,7 +452,7 @@ export default function AdminSettingsPage() {
           <div className="mt-4 overflow-x-auto">
             <table className="w-full text-sm">
               <thead>
-                <tr className="text-left text-gray-500">
+                <tr className="text-left text-slate-700">
                   <th className="py-2">Label</th>
                   <th>Kolor</th>
                   <th>Sort</th>
@@ -509,7 +509,7 @@ export default function AdminSettingsPage() {
         </section>
 
         <section className="rounded-lg bg-white p-6 shadow">
-          <h2 className="text-xl font-semibold text-gray-900">Klasy</h2>
+          <h2 className="text-xl font-semibold text-slate-900">Klasy</h2>
           <div className="mt-4 grid gap-4 md:grid-cols-5">
             <input
               className={fieldClass}
@@ -574,7 +574,7 @@ export default function AdminSettingsPage() {
           <div className="mt-4 overflow-x-auto">
             <table className="w-full text-sm">
               <thead>
-                <tr className="text-left text-gray-500">
+                <tr className="text-left text-slate-700">
                   <th className="py-2">Klasa</th>
                   <th>Rok</th>
                   <th>Wychowawca</th>
