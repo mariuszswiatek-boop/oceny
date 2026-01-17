@@ -92,7 +92,7 @@ Po uruchomieniu seed, możesz zalogować się używając następujących kont:
 
 ### Wychowawca
 - **Email**: `wychowawca@szkola.pl`
-- **Hasło**: `password123`
+Ż- **Hasło**: `password123`
 - **Rola**: HOMEROOM
 
 ### Nauczyciel 1
