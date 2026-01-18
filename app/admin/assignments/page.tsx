@@ -29,6 +29,18 @@ type Assignment = {
   schoolYear: SchoolYear
 }
 
+type AssignmentGroup = {
+  key: string
+  teacherId: string
+  classId: string
+  schoolYearId: string
+  teacher: User
+  class: ClassItem
+  schoolYear: SchoolYear
+  subjects: Array<{ id: string; name: string; assignmentId: string; isActive: boolean }>
+  isActive: boolean
+}
+
 const fieldClass =
   "w-full rounded border border-gray-300 bg-white px-3 py-2 text-sm text-slate-900 placeholder:text-slate-400 focus:border-blue-500 focus:outline-none"
 
@@ -36,8 +48,10 @@ export default function AdminAssignmentsPage() {
   const { data: session, status } = useSession()
   const router = useRouter()
   const [assignments, setAssignments] = useState<Assignment[]>([])
-  const [editedAssignments, setEditedAssignments] = useState<Record<string, Assignment>>({})
-  const [editingAssignments, setEditingAssignments] = useState<Record<string, boolean>>({})
+  const [editedGroups, setEditedGroups] = useState<
+    Record<string, { subjectIds: string[]; isActive: boolean }>
+  >({})
+  const [editingGroups, setEditingGroups] = useState<Record<string, boolean>>({})
   const [users, setUsers] = useState<User[]>([])
   const [subjects, setSubjects] = useState<Subject[]>([])
   const [classes, setClasses] = useState<ClassItem[]>([])
@@ -69,6 +83,43 @@ export default function AdminAssignmentsPage() {
 
   const teachers = useMemo(() => users.filter((u) => u.roles.includes("TEACHER")), [users])
 
+  const groupAssignments = (items: Assignment[]) => {
+    const map = new Map<string, AssignmentGroup>()
+    for (const assignment of items) {
+      const key = `${assignment.teacherId}|${assignment.classId}|${assignment.schoolYearId}`
+      const existing = map.get(key)
+      if (!existing) {
+        map.set(key, {
+          key,
+          teacherId: assignment.teacherId,
+          classId: assignment.classId,
+          schoolYearId: assignment.schoolYearId,
+          teacher: assignment.teacher,
+          class: assignment.class,
+          schoolYear: assignment.schoolYear,
+          subjects: [
+            {
+              id: assignment.subjectId,
+              name: assignment.subject.name,
+              assignmentId: assignment.id,
+              isActive: assignment.isActive,
+            },
+          ],
+          isActive: assignment.isActive,
+        })
+      } else {
+        existing.subjects.push({
+          id: assignment.subjectId,
+          name: assignment.subject.name,
+          assignmentId: assignment.id,
+          isActive: assignment.isActive,
+        })
+        existing.isActive = existing.isActive && assignment.isActive
+      }
+    }
+    return Array.from(map.values())
+  }
+
   const loadAll = async () => {
     setLoading(true)
     setError(null)
@@ -97,12 +148,16 @@ export default function AdminAssignmentsPage() {
         yearsRes.json(),
       ])
       setAssignments(assignments)
-      setEditedAssignments(
-        Object.fromEntries(assignments.map((assignment: Assignment) => [assignment.id, assignment]))
+      const groups = groupAssignments(assignments)
+      setEditedGroups(
+        Object.fromEntries(
+          groups.map((group) => [
+            group.key,
+            { subjectIds: group.subjects.map((s) => s.id), isActive: group.isActive },
+          ])
+        )
       )
-      setEditingAssignments(
-        Object.fromEntries(assignments.map((assignment: Assignment) => [assignment.id, false]))
-      )
+      setEditingGroups(Object.fromEntries(groups.map((group) => [group.key, false])))
       setUsers(users)
       setSubjects(subjects)
       setClasses(classes)
@@ -176,34 +231,70 @@ export default function AdminAssignmentsPage() {
     await loadAll()
   }
 
-  const updateEditedAssignment = (id: string, patch: Partial<Assignment>) => {
-    setEditedAssignments((prev) => ({
-      ...prev,
-      [id]: { ...(prev[id] ?? assignments.find((a) => a.id === id)!), ...patch },
-    }))
-  }
-
-  const handleSaveAssignment = async (id: string) => {
-    const edited = editedAssignments[id]
+  const handleSaveGroup = async (group: AssignmentGroup) => {
+    const edited = editedGroups[group.key]
     if (!edited) return
-    const isUuid = (value: string | undefined) =>
-      typeof value === "string" && /^[0-9a-fA-F-]{36}$/.test(value)
-    const payload = {
-      teacherId: isUuid(edited.teacherId) ? edited.teacherId : undefined,
-      classId: isUuid(edited.classId) ? edited.classId : undefined,
-      subjectId: isUuid(edited.subjectId) ? edited.subjectId : undefined,
-      schoolYearId: isUuid(edited.schoolYearId) ? edited.schoolYearId : undefined,
-      isActive: edited.isActive,
+
+    const currentSubjectIds = new Set(group.subjects.map((s) => s.id))
+    const nextSubjectIds = new Set(edited.subjectIds)
+
+    const toAdd = edited.subjectIds.filter((id) => !currentSubjectIds.has(id))
+    const toRemove = group.subjects.filter((s) => !nextSubjectIds.has(s.id))
+
+    for (const subjectId of toAdd) {
+      const res = await fetch("/api/admin/teacher-assignments", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          teacherId: group.teacherId,
+          classId: group.classId,
+          schoolYearId: group.schoolYearId,
+          subjectId,
+          isActive: edited.isActive,
+        }),
+      })
+      if (!res.ok) {
+        const data = await res.json().catch(() => ({}))
+        setError(data.error || "Błąd zapisu")
+        return
+      }
     }
-    await handleUpdate(id, payload)
-    setEditingAssignments((prev) => ({ ...prev, [id]: false }))
+
+    for (const subject of toRemove) {
+      const res = await fetch(`/api/admin/teacher-assignments/${subject.assignmentId}`, {
+        method: "DELETE",
+      })
+      if (!res.ok) {
+        const data = await res.json().catch(() => ({}))
+        setError(data.error || "Błąd usuwania")
+        return
+      }
+    }
+
+    if (edited.isActive !== group.isActive) {
+      for (const subject of group.subjects) {
+        await handleUpdate(subject.assignmentId, { isActive: edited.isActive })
+      }
+    } else {
+      await loadAll()
+    }
+
+    setEditingGroups((prev) => ({ ...prev, [group.key]: false }))
   }
 
-  const handleCancelAssignment = (id: string) => {
-    const original = assignments.find((assignment) => assignment.id === id)
-    if (!original) return
-    setEditedAssignments((prev) => ({ ...prev, [id]: original }))
-    setEditingAssignments((prev) => ({ ...prev, [id]: false }))
+  const handleCancelGroup = (group: AssignmentGroup) => {
+    setEditedGroups((prev) => ({
+      ...prev,
+      [group.key]: { subjectIds: group.subjects.map((s) => s.id), isActive: group.isActive },
+    }))
+    setEditingGroups((prev) => ({ ...prev, [group.key]: false }))
+  }
+
+  const updateEditedGroup = (key: string, patch: Partial<{ subjectIds: string[]; isActive: boolean }>) => {
+    setEditedGroups((prev) => ({
+      ...prev,
+      [key]: { ...(prev[key] ?? { subjectIds: [], isActive: true }), ...patch },
+    }))
   }
 
   const handleSignOut = async () => {
@@ -383,124 +474,81 @@ export default function AdminAssignmentsPage() {
                   <th className="py-2">Nauczyciel</th>
                   <th>Rok</th>
                   <th>Klasa</th>
-                  <th>Przedmiot</th>
+                  <th>Przedmioty</th>
                   <th>Status</th>
                   <th></th>
                 </tr>
               </thead>
               <tbody className="text-slate-900">
-                {assignments.map((assignment) => (
-                  <tr key={assignment.id} className="border-t">
+                {groupAssignments(assignments).map((group) => (
+                  <tr key={group.key} className="border-t">
                     <td className="py-2 text-slate-900">
-                      {editingAssignments[assignment.id] ? (
-                        <select
-                          className={fieldClass}
-                          value={editedAssignments[assignment.id]?.teacherId ?? assignment.teacherId}
-                          onChange={(e) =>
-                            updateEditedAssignment(assignment.id, { teacherId: e.target.value })
-                          }
-                        >
-                          {teachers.map((teacher) => (
-                            <option key={teacher.id} value={teacher.id}>
-                              {teacher.firstName} {teacher.lastName}
-                            </option>
-                          ))}
-                        </select>
-                      ) : (
-                        <>
-                          {assignment.teacher.firstName} {assignment.teacher.lastName}
-                        </>
-                      )}
+                      {group.teacher.firstName} {group.teacher.lastName}
                     </td>
                     <td className="text-slate-900">
-                      {editingAssignments[assignment.id] ? (
-                        <select
-                          className={fieldClass}
-                          value={editedAssignments[assignment.id]?.schoolYearId ?? assignment.schoolYearId}
-                          onChange={(e) =>
-                            updateEditedAssignment(assignment.id, { schoolYearId: e.target.value })
-                          }
-                        >
-                          {schoolYears.map((year) => (
-                            <option key={year.id} value={year.id}>
-                              {year.name}
-                            </option>
-                          ))}
-                        </select>
-                      ) : (
-                        assignment.schoolYear.name
-                      )}
+                      {group.schoolYear.name}
                     </td>
                     <td className="text-slate-900">
-                      {editingAssignments[assignment.id] ? (
-                        <select
-                          className={fieldClass}
-                          value={editedAssignments[assignment.id]?.classId ?? assignment.classId}
-                          onChange={(e) =>
-                            updateEditedAssignment(assignment.id, { classId: e.target.value })
-                          }
-                        >
-                          {classes.map((classItem) => (
-                            <option key={classItem.id} value={classItem.id}>
-                              {classItem.name} ({classItem.schoolYear?.name ?? "-"})
-                            </option>
-                          ))}
-                        </select>
-                      ) : (
-                        assignment.class.name
-                      )}
+                      {group.class.name}
                     </td>
                     <td className="text-slate-900">
-                      {editingAssignments[assignment.id] ? (
-                        <select
-                          className={fieldClass}
-                          value={editedAssignments[assignment.id]?.subjectId ?? assignment.subjectId}
-                          onChange={(e) =>
-                            updateEditedAssignment(assignment.id, { subjectId: e.target.value })
-                          }
-                        >
+                      {editingGroups[group.key] ? (
+                        <div className="grid max-h-40 gap-1 overflow-y-auto rounded border border-gray-300 bg-white px-2 py-2 text-sm">
                           {subjects.map((subject) => (
-                            <option key={subject.id} value={subject.id}>
+                            <label key={subject.id} className="flex items-center gap-2">
+                              <input
+                                type="checkbox"
+                                checked={(editedGroups[group.key]?.subjectIds ?? []).includes(
+                                  subject.id
+                                )}
+                                onChange={(e) => {
+                                  const current = editedGroups[group.key]?.subjectIds ?? []
+                                  const next = e.target.checked
+                                    ? Array.from(new Set([...current, subject.id]))
+                                    : current.filter((id) => id !== subject.id)
+                                  updateEditedGroup(group.key, { subjectIds: next })
+                                }}
+                              />
                               {subject.name}
-                            </option>
+                            </label>
                           ))}
-                        </select>
+                        </div>
                       ) : (
-                        assignment.subject.name
+                        group.subjects.map((s) => s.name).join(", ")
                       )}
                     </td>
                     <td>
-                      {editingAssignments[assignment.id] ? (
+                      {editingGroups[group.key] ? (
                         <label className="flex items-center gap-2 text-sm text-gray-700">
                           <input
                             type="checkbox"
-                            checked={editedAssignments[assignment.id]?.isActive ?? assignment.isActive}
+                            checked={editedGroups[group.key]?.isActive ?? group.isActive}
                             onChange={(e) =>
-                              updateEditedAssignment(assignment.id, { isActive: e.target.checked })
+                              updateEditedGroup(group.key, { isActive: e.target.checked })
                             }
                           />
-                          {editedAssignments[assignment.id]?.isActive ?? assignment.isActive
+                          {editedGroups[group.key]?.isActive ?? group.isActive
                             ? "Aktywne"
                             : "Archiwalne"}
                         </label>
                       ) : (
-                        <span className={assignment.isActive ? "text-green-600" : "text-gray-500"}>
-                          {assignment.isActive ? "Aktywne" : "Archiwalne"}
+                        <span className={group.isActive ? "text-green-600" : "text-gray-500"}>
+                          {group.isActive ? "Aktywne" : "Archiwalne"}
                         </span>
                       )}
                     </td>
                     <td className="flex gap-2 py-2">
-                      {editingAssignments[assignment.id] ? (
+                      {editingGroups[group.key] ? (
                         <>
                           <button
                             className="rounded border px-2 py-1 text-xs"
-                            onClick={() => handleSaveAssignment(assignment.id)}
+                            onClick={() => handleSaveGroup(group)}
                           >
                             Zapisz
                           </button>
                           <button
                             className="rounded border px-2 py-1 text-xs"
-                            onClick={() => handleCancelAssignment(assignment.id)}
+                            onClick={() => handleCancelGroup(group)}
                           >
                             Anuluj
                           </button>
@@ -509,28 +557,12 @@ export default function AdminAssignmentsPage() {
                         <button
                           className="rounded border px-2 py-1 text-xs"
                           onClick={() =>
-                            setEditingAssignments((prev) => ({ ...prev, [assignment.id]: true }))
+                            setEditingGroups((prev) => ({ ...prev, [group.key]: true }))
                           }
                         >
                           Edytuj
                         </button>
                       )}
-                      <button
-                        className="rounded border px-2 py-1 text-xs"
-                        onClick={() =>
-                          handleUpdate(assignment.id, {
-                            isActive: !assignment.isActive,
-                          })
-                        }
-                      >
-                        {assignment.isActive ? "Archiwizuj" : "Aktywuj"}
-                      </button>
-                      <button
-                        className="rounded border border-red-200 px-2 py-1 text-xs text-red-600"
-                        onClick={() => handleDelete(assignment.id)}
-                      >
-                        Usuń
-                      </button>
                     </td>
                   </tr>
                 ))}
