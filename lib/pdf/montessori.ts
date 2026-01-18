@@ -30,6 +30,9 @@ type ClassInfo = {
   homeroomName: string
 }
 
+const BRAND_LOGO_URL = "https://dcem.pl/wp-content/uploads/2022/05/sygnet_poziom_DCEM.png"
+const BRAND_NAME = "DCEM"
+
 const escapeHtml = (value: string) =>
   value
     .replace(/&/g, "&amp;")
@@ -129,6 +132,10 @@ const buildStudentSection = (
   return `
     <div class="page">
       <div class="header">
+        <div class="brand">
+          <img class="logo" src="${BRAND_LOGO_URL}" alt="${BRAND_NAME}" />
+          <div class="brand-text">${BRAND_NAME}</div>
+        </div>
         <div class="title">ROK SZKOLNY ${escapeHtml(classInfo.schoolYearName)}</div>
         <div class="subtitle">${subtitle}</div>
       </div>
@@ -168,6 +175,14 @@ export const buildStudentPdfHtml = (options: {
           }
           .page { width: 100%; }
           .header { text-align: left; margin-bottom: 18px; }
+          .brand {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 10px;
+          }
+          .logo { height: 32px; width: auto; }
+          .brand-text { font-size: 14px; font-weight: 700; color: #1f4f99; }
           .title { font-size: 18px; font-weight: 700; }
           .subtitle { font-size: 16px; font-weight: 700; margin-top: 6px; }
           .meta { margin-bottom: 18px; line-height: 1.6; }
@@ -261,6 +276,14 @@ export const buildClassPdfHtml = (options: {
           .page { width: 100%; page-break-after: always; }
           .page-break { page-break-after: always; }
           .header { text-align: left; margin-bottom: 18px; }
+          .brand {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 10px;
+          }
+          .logo { height: 32px; width: auto; }
+          .brand-text { font-size: 14px; font-weight: 700; color: #1f4f99; }
           .title { font-size: 18px; font-weight: 700; }
           .subtitle { font-size: 16px; font-weight: 700; margin-top: 6px; }
           .meta { margin-bottom: 18px; line-height: 1.6; }

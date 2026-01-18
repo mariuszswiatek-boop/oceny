@@ -14,7 +14,7 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "System Ocen Montessori",
+  title: "DCEM - System Ocen Montessori",
   description: "System ocen śródrocznych dla szkoły Montessori",
 };
 
@@ -29,6 +29,18 @@ export default function RootLayout({
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
       >
         <Providers>
+          <header className="border-b border-slate-200 bg-white">
+            <div className="mx-auto flex max-w-7xl items-center gap-3 px-6 py-3">
+              <img
+                src="https://dcem.pl/wp-content/uploads/2022/05/sygnet_poziom_DCEM.png"
+                alt="DCEM"
+                className="h-8 w-auto"
+              />
+              <div className="text-sm font-semibold text-slate-700">
+                DCEM · System Ocen Montessori
+              </div>
+            </div>
+          </header>
           {children}
         </Providers>
       </body>
