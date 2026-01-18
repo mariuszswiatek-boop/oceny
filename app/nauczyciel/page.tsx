@@ -14,6 +14,11 @@ interface Class {
   _count: {
     students: number
   }
+  gradeSummary: {
+    total: number
+    filled: number
+    unfilled: number
+  }
 }
 
 export default function NauczycielPage() {
@@ -151,6 +156,10 @@ export default function NauczycielPage() {
                 </p>
                 <p className="mt-1 text-sm text-gray-600">
                   Uczniów: {class_._count.students}
+                </p>
+                <p className="mt-1 text-sm text-gray-600">
+                  Oceny: {class_.gradeSummary?.filled ?? 0} / {class_.gradeSummary?.total ?? 0}{" "}
+                  (brak: {class_.gradeSummary?.unfilled ?? 0})
                 </p>
               </Link>
             ))}

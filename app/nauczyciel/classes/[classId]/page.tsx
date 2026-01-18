@@ -293,7 +293,7 @@ export default function ClassPage() {
                               type="radio"
                               name={`grade-${student.id}`}
                               checked={currentGrade === scale.id}
-                              onChange={() =>
+                              onClick={() =>
                                 handleGradeChange(
                                   student.id,
                                   currentGrade === scale.id ? null : scale.id
