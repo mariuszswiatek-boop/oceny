@@ -60,6 +60,10 @@ export default function AdminSettingsPage() {
   const [gradeScales, setGradeScales] = useState<GradeScale[]>([])
   const [classes, setClasses] = useState<ClassItem[]>([])
   const [users, setUsers] = useState<User[]>([])
+  const [editedSchoolYears, setEditedSchoolYears] = useState<Record<string, SchoolYear>>({})
+  const [editedSubjects, setEditedSubjects] = useState<Record<string, Subject>>({})
+  const [editedGradeScales, setEditedGradeScales] = useState<Record<string, GradeScale>>({})
+  const [editedClasses, setEditedClasses] = useState<Record<string, ClassItem>>({})
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
 
@@ -126,6 +130,12 @@ export default function AdminSettingsPage() {
       setGradeScales(scales)
       setClasses(classes)
       setUsers(users)
+      setEditedSchoolYears(Object.fromEntries(years.map((year: SchoolYear) => [year.id, year])))
+      setEditedSubjects(Object.fromEntries(subjects.map((subject: Subject) => [subject.id, subject])))
+      setEditedGradeScales(
+        Object.fromEntries(scales.map((scale: GradeScale) => [scale.id, scale]))
+      )
+      setEditedClasses(Object.fromEntries(classes.map((classItem: ClassItem) => [classItem.id, classItem])))
       if (!newClass.schoolYearId && years[0]?.id) {
         setNewClass((prev) => ({ ...prev, schoolYearId: years[0].id }))
       }
@@ -193,6 +203,80 @@ export default function AdminSettingsPage() {
       return
     }
     await loadAll()
+  }
+
+  const updateEditedSchoolYear = (id: string, patch: Partial<SchoolYear>) => {
+    setEditedSchoolYears((prev) => ({
+      ...prev,
+      [id]: { ...(prev[id] ?? schoolYears.find((year) => year.id === id)!), ...patch },
+    }))
+  }
+
+  const updateEditedSubject = (id: string, patch: Partial<Subject>) => {
+    setEditedSubjects((prev) => ({
+      ...prev,
+      [id]: { ...(prev[id] ?? subjects.find((subject) => subject.id === id)!), ...patch },
+    }))
+  }
+
+  const updateEditedGradeScale = (id: string, patch: Partial<GradeScale>) => {
+    setEditedGradeScales((prev) => ({
+      ...prev,
+      [id]: { ...(prev[id] ?? gradeScales.find((scale) => scale.id === id)!), ...patch },
+    }))
+  }
+
+  const updateEditedClass = (id: string, patch: Partial<ClassItem>) => {
+    setEditedClasses((prev) => ({
+      ...prev,
+      [id]: { ...(prev[id] ?? classes.find((classItem) => classItem.id === id)!), ...patch },
+    }))
+  }
+
+  const handleSaveSchoolYear = async (id: string) => {
+    const edited = editedSchoolYears[id]
+    if (!edited) return
+    await handleUpdate(`/api/admin/school-years/${id}`, {
+      name: edited.name,
+      startDate: edited.startDate || null,
+      endDate: edited.endDate || null,
+      sortOrder: edited.sortOrder,
+      gradingTerm: edited.gradingTerm,
+      isGradingOpen: edited.isGradingOpen,
+    })
+  }
+
+  const handleSaveSubject = async (id: string) => {
+    const edited = editedSubjects[id]
+    if (!edited) return
+    await handleUpdate(`/api/admin/subjects/${id}`, {
+      name: edited.name,
+      sortOrder: edited.sortOrder,
+      isActive: edited.isActive,
+    })
+  }
+
+  const handleSaveGradeScale = async (id: string) => {
+    const edited = editedGradeScales[id]
+    if (!edited) return
+    await handleUpdate(`/api/admin/grade-scales/${id}`, {
+      label: edited.label,
+      colorHex: edited.colorHex,
+      sortOrder: edited.sortOrder,
+      isActive: edited.isActive,
+    })
+  }
+
+  const handleSaveClass = async (id: string) => {
+    const edited = editedClasses[id]
+    if (!edited) return
+    await handleUpdate(`/api/admin/classes/${id}`, {
+      name: edited.name,
+      schoolYearId: edited.schoolYearId,
+      teacherId: edited.teacherId || null,
+      sortOrder: edited.sortOrder,
+      isActive: edited.isActive,
+    })
   }
 
   if (status === "loading" || loading) {
@@ -290,17 +374,50 @@ export default function AdminSettingsPage() {
               <tbody className="text-slate-900">
                 {schoolYears.map((year) => (
                   <tr key={year.id} className="border-t">
-                    <td className="py-2">{year.name}</td>
-                    <td>{year.startDate ? year.startDate.slice(0, 10) : "-"}</td>
-                    <td>{year.endDate ? year.endDate.slice(0, 10) : "-"}</td>
-                    <td>{year.sortOrder}</td>
+                    <td className="py-2">
+                      <input
+                        className={fieldClass}
+                        value={editedSchoolYears[year.id]?.name ?? year.name}
+                        onChange={(e) => updateEditedSchoolYear(year.id, { name: e.target.value })}
+                      />
+                    </td>
+                    <td>
+                      <input
+                        className={fieldClass}
+                        type="date"
+                        value={editedSchoolYears[year.id]?.startDate ?? year.startDate ?? ""}
+                        onChange={(e) =>
+                          updateEditedSchoolYear(year.id, { startDate: e.target.value })
+                        }
+                      />
+                    </td>
+                    <td>
+                      <input
+                        className={fieldClass}
+                        type="date"
+                        value={editedSchoolYears[year.id]?.endDate ?? year.endDate ?? ""}
+                        onChange={(e) =>
+                          updateEditedSchoolYear(year.id, { endDate: e.target.value })
+                        }
+                      />
+                    </td>
+                    <td>
+                      <input
+                        className={fieldClass}
+                        type="number"
+                        value={editedSchoolYears[year.id]?.sortOrder ?? year.sortOrder}
+                        onChange={(e) =>
+                          updateEditedSchoolYear(year.id, { sortOrder: Number(e.target.value) })
+                        }
+                      />
+                    </td>
                     <td>
                       <select
                         className={fieldClass}
-                        value={year.gradingTerm}
+                        value={editedSchoolYears[year.id]?.gradingTerm ?? year.gradingTerm}
                         onChange={(e) =>
-                          handleUpdate(`/api/admin/school-years/${year.id}`, {
-                            gradingTerm: e.target.value,
+                          updateEditedSchoolYear(year.id, {
+                            gradingTerm: e.target.value as SchoolYear["gradingTerm"],
                           })
                         }
                         disabled={!year.isActive}
@@ -310,21 +427,19 @@ export default function AdminSettingsPage() {
                       </select>
                     </td>
                     <td>
-                      <button
-                        className={`rounded border px-2 py-1 text-xs ${
-                          year.isGradingOpen
-                            ? "border-green-200 text-green-700"
-                            : "border-gray-200 text-gray-600"
-                        }`}
-                        onClick={() =>
-                          handleUpdate(`/api/admin/school-years/${year.id}`, {
-                            isGradingOpen: !year.isGradingOpen,
-                          })
-                        }
-                        disabled={!year.isActive}
-                      >
-                        {year.isGradingOpen ? "Odblokowane" : "Zablokowane"}
-                      </button>
+                      <label className="flex items-center gap-2 text-sm text-gray-700">
+                        <input
+                          type="checkbox"
+                          checked={editedSchoolYears[year.id]?.isGradingOpen ?? year.isGradingOpen}
+                          onChange={(e) =>
+                            updateEditedSchoolYear(year.id, { isGradingOpen: e.target.checked })
+                          }
+                          disabled={!year.isActive}
+                        />
+                        {editedSchoolYears[year.id]?.isGradingOpen ?? year.isGradingOpen
+                          ? "Odblokowane"
+                          : "Zablokowane"}
+                      </label>
                     </td>
                     <td>
                       <span className={year.isActive ? "text-green-600" : "text-gray-500"}>
@@ -332,6 +447,12 @@ export default function AdminSettingsPage() {
                       </span>
                     </td>
                     <td className="flex gap-2 py-2">
+                      <button
+                        className="rounded border px-2 py-1 text-xs"
+                        onClick={() => handleSaveSchoolYear(year.id)}
+                      >
+                        Zapisz
+                      </button>
                       <button
                         className="rounded border px-2 py-1 text-xs"
                         onClick={() =>
@@ -411,14 +532,44 @@ export default function AdminSettingsPage() {
               <tbody className="text-slate-900">
                 {subjects.map((subject) => (
                   <tr key={subject.id} className="border-t">
-                    <td className="py-2">{subject.name}</td>
-                    <td>{subject.sortOrder}</td>
+                    <td className="py-2">
+                      <input
+                        className={fieldClass}
+                        value={editedSubjects[subject.id]?.name ?? subject.name}
+                        onChange={(e) => updateEditedSubject(subject.id, { name: e.target.value })}
+                      />
+                    </td>
                     <td>
-                      <span className={subject.isActive ? "text-green-600" : "text-gray-500"}>
-                        {subject.isActive ? "Aktywny" : "Archiwalny"}
-                      </span>
+                      <input
+                        className={fieldClass}
+                        type="number"
+                        value={editedSubjects[subject.id]?.sortOrder ?? subject.sortOrder}
+                        onChange={(e) =>
+                          updateEditedSubject(subject.id, { sortOrder: Number(e.target.value) })
+                        }
+                      />
+                    </td>
+                    <td>
+                      <label className="flex items-center gap-2 text-sm text-gray-700">
+                        <input
+                          type="checkbox"
+                          checked={editedSubjects[subject.id]?.isActive ?? subject.isActive}
+                          onChange={(e) =>
+                            updateEditedSubject(subject.id, { isActive: e.target.checked })
+                          }
+                        />
+                        {editedSubjects[subject.id]?.isActive ?? subject.isActive
+                          ? "Aktywny"
+                          : "Archiwalny"}
+                      </label>
                     </td>
                     <td className="flex gap-2 py-2">
+                      <button
+                        className="rounded border px-2 py-1 text-xs"
+                        onClick={() => handleSaveSubject(subject.id)}
+                      >
+                        Zapisz
+                      </button>
                       <button
                         className="rounded border px-2 py-1 text-xs"
                         onClick={() =>
@@ -499,20 +650,56 @@ export default function AdminSettingsPage() {
               <tbody className="text-slate-900">
                 {gradeScales.map((scale) => (
                   <tr key={scale.id} className="border-t">
-                    <td className="py-2">{scale.label}</td>
-                    <td>
-                      <span
-                        className="inline-flex h-5 w-8 rounded"
-                        style={{ backgroundColor: scale.colorHex }}
+                    <td className="py-2">
+                      <input
+                        className={fieldClass}
+                        value={editedGradeScales[scale.id]?.label ?? scale.label}
+                        onChange={(e) =>
+                          updateEditedGradeScale(scale.id, { label: e.target.value })
+                        }
                       />
                     </td>
-                    <td>{scale.sortOrder}</td>
                     <td>
-                      <span className={scale.isActive ? "text-green-600" : "text-gray-500"}>
-                        {scale.isActive ? "Aktywna" : "Archiwalna"}
-                      </span>
+                      <input
+                        className={fieldClass}
+                        type="color"
+                        value={editedGradeScales[scale.id]?.colorHex ?? scale.colorHex}
+                        onChange={(e) =>
+                          updateEditedGradeScale(scale.id, { colorHex: e.target.value })
+                        }
+                      />
+                    </td>
+                    <td>
+                      <input
+                        className={fieldClass}
+                        type="number"
+                        value={editedGradeScales[scale.id]?.sortOrder ?? scale.sortOrder}
+                        onChange={(e) =>
+                          updateEditedGradeScale(scale.id, { sortOrder: Number(e.target.value) })
+                        }
+                      />
+                    </td>
+                    <td>
+                      <label className="flex items-center gap-2 text-sm text-gray-700">
+                        <input
+                          type="checkbox"
+                          checked={editedGradeScales[scale.id]?.isActive ?? scale.isActive}
+                          onChange={(e) =>
+                            updateEditedGradeScale(scale.id, { isActive: e.target.checked })
+                          }
+                        />
+                        {editedGradeScales[scale.id]?.isActive ?? scale.isActive
+                          ? "Aktywna"
+                          : "Archiwalna"}
+                      </label>
                     </td>
                     <td className="flex gap-2 py-2">
+                      <button
+                        className="rounded border px-2 py-1 text-xs"
+                        onClick={() => handleSaveGradeScale(scale.id)}
+                      >
+                        Zapisz
+                      </button>
                       <button
                         className="rounded border px-2 py-1 text-xs"
                         onClick={() =>
@@ -622,20 +809,79 @@ export default function AdminSettingsPage() {
               <tbody className="text-slate-900">
                 {classes.map((classItem) => (
                   <tr key={classItem.id} className="border-t">
-                    <td className="py-2">{classItem.name}</td>
-                    <td>{classItem.schoolYear?.name ?? "-"}</td>
-                    <td>
-                      {classItem.teacher
-                        ? `${classItem.teacher.firstName} ${classItem.teacher.lastName}`
-                        : "-"}
+                    <td className="py-2">
+                      <input
+                        className={fieldClass}
+                        value={editedClasses[classItem.id]?.name ?? classItem.name}
+                        onChange={(e) =>
+                          updateEditedClass(classItem.id, { name: e.target.value })
+                        }
+                      />
                     </td>
-                    <td>{classItem.sortOrder}</td>
                     <td>
-                      <span className={classItem.isActive ? "text-green-600" : "text-gray-500"}>
-                        {classItem.isActive ? "Aktywna" : "Archiwalna"}
-                      </span>
+                      <select
+                        className={fieldClass}
+                        value={editedClasses[classItem.id]?.schoolYearId ?? classItem.schoolYearId}
+                        onChange={(e) =>
+                          updateEditedClass(classItem.id, { schoolYearId: e.target.value })
+                        }
+                      >
+                        {schoolYears.map((year) => (
+                          <option key={year.id} value={year.id}>
+                            {year.name}
+                          </option>
+                        ))}
+                      </select>
+                    </td>
+                    <td>
+                      <select
+                        className={fieldClass}
+                        value={editedClasses[classItem.id]?.teacherId ?? classItem.teacherId ?? ""}
+                        onChange={(e) =>
+                          updateEditedClass(classItem.id, {
+                            teacherId: e.target.value || null,
+                          })
+                        }
+                      >
+                        <option value="">Brak</option>
+                        {homeroomTeachers.map((teacher) => (
+                          <option key={teacher.id} value={teacher.id}>
+                            {teacher.firstName} {teacher.lastName}
+                          </option>
+                        ))}
+                      </select>
+                    </td>
+                    <td>
+                      <input
+                        className={fieldClass}
+                        type="number"
+                        value={editedClasses[classItem.id]?.sortOrder ?? classItem.sortOrder}
+                        onChange={(e) =>
+                          updateEditedClass(classItem.id, { sortOrder: Number(e.target.value) })
+                        }
+                      />
+                    </td>
+                    <td>
+                      <label className="flex items-center gap-2 text-sm text-gray-700">
+                        <input
+                          type="checkbox"
+                          checked={editedClasses[classItem.id]?.isActive ?? classItem.isActive}
+                          onChange={(e) =>
+                            updateEditedClass(classItem.id, { isActive: e.target.checked })
+                          }
+                        />
+                        {editedClasses[classItem.id]?.isActive ?? classItem.isActive
+                          ? "Aktywna"
+                          : "Archiwalna"}
+                      </label>
                     </td>
                     <td className="flex gap-2 py-2">
+                      <button
+                        className="rounded border px-2 py-1 text-xs"
+                        onClick={() => handleSaveClass(classItem.id)}
+                      >
+                        Zapisz
+                      </button>
                       <button
                         className="rounded border px-2 py-1 text-xs"
                         onClick={() =>

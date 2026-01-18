@@ -8,6 +8,7 @@ const updateSchema = z.object({
   fullName: z.string().optional().nullable(),
   phone: z.string().optional().nullable(),
   isPrimary: z.boolean().optional(),
+  studentId: z.string().uuid().optional(),
 })
 
 export async function PATCH(
