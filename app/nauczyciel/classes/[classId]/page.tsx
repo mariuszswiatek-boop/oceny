@@ -272,7 +272,7 @@ export default function ClassPage() {
                       <th
                         key={scale.id}
                         className="px-6 py-3 text-center text-xs font-medium uppercase tracking-wider"
-                        style={{ backgroundColor: scale.colorHex, color: "#ffffff" }}
+                        style={{ backgroundColor: scale.colorHex, color: "#374151", fontWeight: 700 }}
                       >
                         {scale.label}
                       </th>
