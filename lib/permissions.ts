@@ -21,7 +21,8 @@ export async function requireAuth() {
 export async function requireRole(role: UserRole | UserRole[]) {
   const user = await requireAuth()
   const allowedRoles = Array.isArray(role) ? role : [role]
-  if (!allowedRoles.includes(user.role)) {
+  const userRoles = user.roles ?? []
+  if (!allowedRoles.some((allowed) => userRoles.includes(allowed))) {
     throw new Error("Forbidden")
   }
   return user

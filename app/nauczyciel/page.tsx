@@ -31,7 +31,7 @@ export default function NauczycielPage() {
         body: JSON.stringify({
           location: "app/nauczyciel/page.tsx:27",
           message: "Sign out start",
-          data: { role: session?.user?.role ?? null },
+          data: { roles: session?.user?.roles ?? null },
           timestamp: Date.now(),
           sessionId: "debug-session",
           runId: "run1",
@@ -75,7 +75,7 @@ export default function NauczycielPage() {
       return
     }
 
-    if (status === "authenticated" && session?.user.role !== "TEACHER") {
+    if (status === "authenticated" && !session?.user.roles?.includes("TEACHER")) {
       router.push("/unauthorized")
       return
     }

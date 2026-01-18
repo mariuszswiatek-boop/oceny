@@ -66,6 +66,6 @@ echo "==> Running seed"
 $COMPOSE exec -T app npm run db:seed
 
 echo "==> Ensure admin password"
-$COMPOSE exec -T app node -e 'const {PrismaClient}=require("@prisma/client");const bcrypt=require("bcryptjs");const p=new PrismaClient();(async()=>{const hash=await bcrypt.hash("password123",10);await p.user.upsert({where:{email:"admin@szkola.pl"},update:{password:hash,isActive:true,role:"ADMIN"},create:{email:"admin@szkola.pl",password:hash,firstName:"Jan",lastName:"Admin",role:"ADMIN",isActive:true}});console.log("admin password set");await p.$disconnect();})();'
+$COMPOSE exec -T app node -e 'const {PrismaClient}=require("@prisma/client");const bcrypt=require("bcryptjs");const p=new PrismaClient();(async()=>{const hash=await bcrypt.hash("password123",10);await p.user.upsert({where:{email:"admin@szkola.pl"},update:{password:hash,isActive:true,roles:["ADMIN"]},create:{email:"admin@szkola.pl",password:hash,firstName:"Jan",lastName:"Admin",roles:["ADMIN"],isActive:true}});console.log("admin password set");await p.$disconnect();})();'
 
 echo "==> Done"

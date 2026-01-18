@@ -18,7 +18,7 @@ export default function AdminPage() {
         body: JSON.stringify({
           location: "app/admin/page.tsx:14",
           message: "Sign out start",
-          data: { role: session?.user?.role ?? null },
+          data: { roles: session?.user?.roles ?? null },
           timestamp: Date.now(),
           sessionId: "debug-session",
           runId: "run1",
@@ -62,7 +62,7 @@ export default function AdminPage() {
       return
     }
 
-    if (status === "authenticated" && session?.user.role !== "ADMIN") {
+    if (status === "authenticated" && !session?.user.roles?.includes("ADMIN")) {
       router.push("/unauthorized")
       return
     }

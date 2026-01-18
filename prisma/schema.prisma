@@ -29,7 +29,7 @@ model User {
   password  String
   firstName String
   lastName  String
-  role      UserRole @default(READONLY)
+  roles     UserRole[] @default([READONLY])
   isActive  Boolean  @default(true)
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt

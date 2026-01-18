@@ -55,7 +55,7 @@ export default function ClassPage() {
       return
     }
 
-    if (status === "authenticated" && session?.user.role !== "TEACHER") {
+    if (status === "authenticated" && !session?.user.roles?.includes("TEACHER")) {
       router.push("/unauthorized")
       return
     }

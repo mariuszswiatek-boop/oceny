@@ -103,52 +103,52 @@ async function main() {
 
   const admin = await prisma.user.upsert({
     where: { email: "admin@szkola.pl" },
-    update: { role: "ADMIN", isActive: true },
+    update: { roles: ["ADMIN"], isActive: true },
     create: {
       email: "admin@szkola.pl",
       password: hashedPassword,
       firstName: "Jan",
       lastName: "Admin",
-      role: "ADMIN",
+      roles: ["ADMIN"],
       isActive: true,
     },
   })
 
   const wychowawca = await prisma.user.upsert({
     where: { email: "wychowawca@szkola.pl" },
-    update: { role: "HOMEROOM", isActive: true },
+    update: { roles: ["HOMEROOM", "TEACHER"], isActive: true },
     create: {
       email: "wychowawca@szkola.pl",
       password: hashedPassword,
       firstName: "Anna",
       lastName: "Wychowawczyni",
-      role: "HOMEROOM",
+      roles: ["HOMEROOM", "TEACHER"],
       isActive: true,
     },
   })
 
   const nauczyciel1 = await prisma.user.upsert({
     where: { email: "nauczyciel1@szkola.pl" },
-    update: { role: "TEACHER", isActive: true },
+    update: { roles: ["TEACHER"], isActive: true },
     create: {
       email: "nauczyciel1@szkola.pl",
       password: hashedPassword,
       firstName: "Piotr",
       lastName: "Nauczyciel",
-      role: "TEACHER",
+      roles: ["TEACHER"],
       isActive: true,
     },
   })
 
   const nauczyciel2 = await prisma.user.upsert({
     where: { email: "nauczyciel2@szkola.pl" },
-    update: { role: "TEACHER", isActive: true },
+    update: { roles: ["TEACHER"], isActive: true },
     create: {
       email: "nauczyciel2@szkola.pl",
       password: hashedPassword,
       firstName: "Maria",
       lastName: "Nauczycielka",
-      role: "TEACHER",
+      roles: ["TEACHER"],
       isActive: true,
     },
   })

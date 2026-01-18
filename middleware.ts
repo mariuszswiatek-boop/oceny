@@ -11,18 +11,18 @@ export default auth((request: NextRequest & { auth: any }) => {
     return NextResponse.redirect(new URL("/login", request.url))
   }
 
-  const role = session.user.role
+  const roles = session.user.roles ?? []
 
   // Sprawdź uprawnienia do różnych ścieżek
-  if (path.startsWith("/admin") && role !== "ADMIN") {
+  if (path.startsWith("/admin") && !roles.includes("ADMIN")) {
     return NextResponse.redirect(new URL("/unauthorized", request.url))
   }
 
-  if (path.startsWith("/nauczyciel") && role !== "TEACHER") {
+  if (path.startsWith("/nauczyciel") && !roles.includes("TEACHER")) {
     return NextResponse.redirect(new URL("/unauthorized", request.url))
   }
 
-  if (path.startsWith("/wychowawca") && role !== "HOMEROOM") {
+  if (path.startsWith("/wychowawca") && !roles.includes("HOMEROOM")) {
     return NextResponse.redirect(new URL("/unauthorized", request.url))
   }
 

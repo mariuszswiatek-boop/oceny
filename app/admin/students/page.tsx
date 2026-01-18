@@ -59,7 +59,7 @@ export default function AdminStudentsPage() {
       router.push("/login")
       return
     }
-    if (status === "authenticated" && session?.user.role !== "ADMIN") {
+    if (status === "authenticated" && !session?.user.roles?.includes("ADMIN")) {
       router.push("/unauthorized")
     }
   }, [status, session, router])

@@ -53,7 +53,7 @@ export default function WychowawcaClassPage() {
       return
     }
 
-    if (status === "authenticated" && session?.user.role !== "HOMEROOM") {
+    if (status === "authenticated" && !session?.user.roles?.includes("HOMEROOM")) {
       router.push("/unauthorized")
       return
     }

@@ -35,7 +35,7 @@ type User = {
   id: string
   firstName: string
   lastName: string
-  role: "ADMIN" | "TEACHER" | "HOMEROOM" | "READONLY"
+  roles: Array<"ADMIN" | "TEACHER" | "HOMEROOM" | "READONLY">
 }
 
 type ClassItem = {
@@ -98,13 +98,13 @@ export default function AdminSettingsPage() {
       router.push("/login")
       return
     }
-    if (status === "authenticated" && session?.user.role !== "ADMIN") {
+    if (status === "authenticated" && !session?.user.roles?.includes("ADMIN")) {
       router.push("/unauthorized")
     }
   }, [status, session, router])
 
   const homeroomTeachers = useMemo(
-    () => users.filter((u) => u.role === "HOMEROOM"),
+    () => users.filter((u) => u.roles.includes("HOMEROOM")),
     [users]
   )
 

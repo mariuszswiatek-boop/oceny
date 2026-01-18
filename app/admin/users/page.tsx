@@ -10,9 +10,11 @@ type User = {
   email: string
   firstName: string
   lastName: string
-  role: "ADMIN" | "TEACHER" | "HOMEROOM" | "READONLY"
+  roles: Array<"ADMIN" | "TEACHER" | "HOMEROOM" | "READONLY">
   isActive: boolean
 }
+
+const roleOptions = ["ADMIN", "TEACHER", "HOMEROOM", "READONLY"] as const
 
 const fieldClass =
   "w-full rounded border border-gray-300 px-3 py-2 text-sm text-gray-900 placeholder:text-gray-400 focus:border-gray-500 focus:outline-none"
@@ -30,7 +32,7 @@ export default function AdminUsersPage() {
     password: "",
     firstName: "",
     lastName: "",
-    role: "TEACHER" as User["role"],
+    roles: ["TEACHER"] as User["roles"],
     isActive: true,
   })
 
@@ -39,7 +41,7 @@ export default function AdminUsersPage() {
       router.push("/login")
       return
     }
-    if (status === "authenticated" && session?.user.role !== "ADMIN") {
+    if (status === "authenticated" && !session?.user.roles?.includes("ADMIN")) {
       router.push("/unauthorized")
     }
   }, [status, session, router])
@@ -82,7 +84,7 @@ export default function AdminUsersPage() {
       password: "",
       firstName: "",
       lastName: "",
-      role: "TEACHER",
+      roles: ["TEACHER"],
       isActive: true,
     })
     await loadUsers()
@@ -129,7 +131,7 @@ export default function AdminUsersPage() {
       email: edited.email,
       firstName: edited.firstName,
       lastName: edited.lastName,
-      role: edited.role,
+      roles: edited.roles,
       isActive: edited.isActive,
     })
     setEditingUsers((prev) => ({ ...prev, [id]: false }))
@@ -210,16 +212,24 @@ export default function AdminUsersPage() {
               value={newUser.password}
               onChange={(e) => setNewUser({ ...newUser, password: e.target.value })}
             />
-            <select
-              className={fieldClass}
-              value={newUser.role}
-              onChange={(e) => setNewUser({ ...newUser, role: e.target.value as User["role"] })}
-            >
-              <option value="ADMIN">ADMIN</option>
-              <option value="TEACHER">TEACHER</option>
-              <option value="HOMEROOM">HOMEROOM</option>
-              <option value="READONLY">READONLY</option>
-            </select>
+            <div className="grid gap-1 text-xs text-gray-700">
+              {roleOptions.map((role) => (
+                <label key={role} className="flex items-center gap-2">
+                  <input
+                    type="checkbox"
+                    checked={newUser.roles.includes(role)}
+                    onChange={(e) => {
+                      const next = e.target.checked
+                        ? Array.from(new Set([...newUser.roles, role]))
+                        : newUser.roles.filter((r) => r !== role)
+                      if (next.length === 0) return
+                      setNewUser({ ...newUser, roles: next })
+                    }}
+                  />
+                  {role}
+                </label>
+              ))}
+            </div>
             <button
               onClick={handleCreate}
               className="rounded bg-gray-900 px-3 py-2 text-sm text-white"
@@ -281,20 +291,28 @@ export default function AdminUsersPage() {
                     </td>
                     <td className="text-slate-900">
                       {editingUsers[user.id] ? (
-                        <select
-                          className={fieldClass}
-                          value={editedUsers[user.id]?.role ?? user.role}
-                          onChange={(e) =>
-                            updateEditedUser(user.id, { role: e.target.value as User["role"] })
-                          }
-                        >
-                          <option value="ADMIN">ADMIN</option>
-                          <option value="TEACHER">TEACHER</option>
-                          <option value="HOMEROOM">HOMEROOM</option>
-                          <option value="READONLY">READONLY</option>
-                        </select>
+                        <div className="grid gap-1 text-xs text-gray-700">
+                          {roleOptions.map((role) => (
+                              <label key={role} className="flex items-center gap-2">
+                                <input
+                                  type="checkbox"
+                                  checked={(editedUsers[user.id]?.roles ?? user.roles).includes(role)}
+                                  onChange={(e) => {
+                                    const current = editedUsers[user.id]?.roles ?? user.roles
+                                    const next = e.target.checked
+                                      ? Array.from(new Set([...current, role]))
+                                      : current.filter((r) => r !== role)
+                                    if (next.length === 0) return
+                                    updateEditedUser(user.id, { roles: next })
+                                  }}
+                                />
+                                {role}
+                              </label>
+                            )
+                          )}
+                        </div>
                       ) : (
-                        user.role
+                        user.roles.join(", ")
                       )}
                     </td>
                     <td>

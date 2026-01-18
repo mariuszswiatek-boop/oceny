@@ -9,7 +9,7 @@ type User = {
   id: string
   firstName: string
   lastName: string
-  role: "ADMIN" | "TEACHER" | "HOMEROOM" | "READONLY"
+  roles: Array<"ADMIN" | "TEACHER" | "HOMEROOM" | "READONLY">
 }
 
 type Subject = { id: string; name: string }
@@ -62,12 +62,12 @@ export default function AdminAssignmentsPage() {
       router.push("/login")
       return
     }
-    if (status === "authenticated" && session?.user.role !== "ADMIN") {
+    if (status === "authenticated" && !session?.user.roles?.includes("ADMIN")) {
       router.push("/unauthorized")
     }
   }, [status, session, router])
 
-  const teachers = useMemo(() => users.filter((u) => u.role === "TEACHER"), [users])
+  const teachers = useMemo(() => users.filter((u) => u.roles.includes("TEACHER")), [users])
 
   const loadAll = async () => {
     setLoading(true)

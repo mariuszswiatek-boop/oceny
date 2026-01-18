@@ -9,7 +9,7 @@ const userSchema = z.object({
   password: z.string().min(6),
   firstName: z.string().min(1),
   lastName: z.string().min(1),
-  role: z.enum(["ADMIN", "TEACHER", "HOMEROOM", "READONLY"]),
+  roles: z.array(z.enum(["ADMIN", "TEACHER", "HOMEROOM", "READONLY"])).min(1),
   isActive: z.boolean().optional(),
 })
 
@@ -39,7 +39,7 @@ export async function POST(request: Request) {
         password: passwordHash,
         firstName: data.firstName,
         lastName: data.lastName,
-        role: data.role,
+        roles: data.roles,
         isActive: data.isActive ?? true,
       },
     })
