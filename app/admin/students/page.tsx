@@ -112,8 +112,13 @@ export default function AdminStudentsPage() {
     setError(null)
     const trimmedFirstName = newStudent.firstName.trim()
     const trimmedLastName = newStudent.lastName.trim()
+    const trimmedClassId = newStudent.classId.trim()
     if (!trimmedFirstName || !trimmedLastName) {
       setError("Imię i nazwisko nie mogą być puste")
+      return
+    }
+    if (!trimmedClassId) {
+      setError("Wybierz klasę")
       return
     }
     const res = await fetch("/api/admin/students", {
@@ -123,6 +128,7 @@ export default function AdminStudentsPage() {
         ...newStudent,
         firstName: trimmedFirstName,
         lastName: trimmedLastName,
+        classId: trimmedClassId,
         isActive: true,
       }),
     })

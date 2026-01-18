@@ -4,9 +4,9 @@ import { prisma } from "@/lib/prisma"
 import { requireRole } from "@/lib/permissions"
 
 const studentSchema = z.object({
-  firstName: z.string().min(1),
-  lastName: z.string().min(1),
-  classId: z.string().uuid(),
+  firstName: z.string().trim().min(1),
+  lastName: z.string().trim().min(1),
+  classId: z.string().trim().min(1),
   isActive: z.boolean().optional(),
 })
 

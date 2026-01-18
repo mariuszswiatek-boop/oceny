@@ -4,9 +4,9 @@ import { prisma } from "@/lib/prisma"
 import { requireRole } from "@/lib/permissions"
 
 const updateSchema = z.object({
-  firstName: z.string().min(1).optional(),
-  lastName: z.string().min(1).optional(),
-  classId: z.string().uuid().optional(),
+  firstName: z.string().trim().min(1).optional(),
+  lastName: z.string().trim().min(1).optional(),
+  classId: z.string().trim().min(1).optional(),
   isActive: z.boolean().optional(),
 })
 
