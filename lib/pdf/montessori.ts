@@ -70,7 +70,6 @@ const buildGradesTable = (
         <tr class="row">
           <td class="subject-cell">${escapeHtml(subject.name)}</td>
           ${scaleCells}
-          <td class="signature-cell"></td>
         </tr>
       `
     })
@@ -92,9 +91,8 @@ const buildGradesTable = (
                 `
               )
               .join("")}
-            <th class="signature-header">Podpis</th>
           </tr>
-          <tr class="divider"><th colspan="${gradeScales.length + 2}"></th></tr>
+          <tr class="divider"><th colspan="${gradeScales.length + 1}"></th></tr>
         </thead>
         <tbody>
           ${rows}
@@ -182,8 +180,7 @@ export const buildStudentPdfHtml = (options: {
             text-align: center;
             vertical-align: middle;
           }
-          .subject-header, .subject-cell { text-align: left; width: 38%; }
-          .signature-header, .signature-cell { width: 10%; }
+          .subject-header, .subject-cell { text-align: left; width: 40%; }
           .scale-header {
             font-size: 10px;
             font-weight: 700;
@@ -276,8 +273,7 @@ export const buildClassPdfHtml = (options: {
             text-align: center;
             vertical-align: middle;
           }
-          .subject-header, .subject-cell { text-align: left; width: 38%; }
-          .signature-header, .signature-cell { width: 10%; }
+          .subject-header, .subject-cell { text-align: left; width: 40%; }
           .scale-header {
             font-size: 10px;
             font-weight: 700;

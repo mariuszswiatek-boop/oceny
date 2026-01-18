@@ -112,6 +112,11 @@ export default function WychowawcaClassPage() {
     setGeneratingPdf(studentId || "all")
 
     const termQuery = termMode === "BOTH" ? "" : `&term=${termMode}`
+    const getFilename = (res: Response, fallback: string) => {
+      const header = res.headers.get("content-disposition") || ""
+      const match = header.match(/filename="([^"]+)"/)
+      return match?.[1] || fallback
+    }
 
     try {
       if (studentId) {
@@ -121,10 +126,11 @@ export default function WychowawcaClassPage() {
         )
         if (res.ok) {
           const blob = await res.blob()
+          const filename = getFilename(res, `oceny_${studentId}.pdf`)
           const url = window.URL.createObjectURL(blob)
           const a = document.createElement("a")
           a.href = url
-          a.download = `oceny_${studentId}.pdf`
+          a.download = filename
           document.body.appendChild(a)
           a.click()
           window.URL.revokeObjectURL(url)
@@ -137,10 +143,11 @@ export default function WychowawcaClassPage() {
         )
         if (res.ok) {
           const blob = await res.blob()
+          const filename = getFilename(res, "oceny_klasa.zip")
           const url = window.URL.createObjectURL(blob)
           const a = document.createElement("a")
           a.href = url
-          a.download = `oceny_klasa.pdf`
+          a.download = filename
           document.body.appendChild(a)
           a.click()
           window.URL.revokeObjectURL(url)
