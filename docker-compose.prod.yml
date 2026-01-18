@@ -2,7 +2,9 @@ version: '3.8'
 
 services:
   caddy:
-    image: caddy:2-alpine
+    build:
+      context: .
+      dockerfile: docker/caddy/Dockerfile
     container_name: oceny-caddy
     restart: unless-stopped
     ports:

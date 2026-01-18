@@ -1,4 +1,33 @@
+{
+  order rate_limit before respond
+}
+
 https://oux.pl:3000 {
   tls /certs/fullchain.pem /certs/privkey.pem
+
+  @auth {
+    path /api/auth/* /login
+  }
+
+  rate_limit @auth {
+    zone auth {
+      key {remote_host}
+      events 10
+      window 1m
+    }
+  }
+
+  rate_limit {
+    zone global {
+      key {remote_host}
+      events 300
+      window 1m
+    }
+  }
+
+  request_body {
+    max_size 2MB
+  }
+
   reverse_proxy app:3000
 }
