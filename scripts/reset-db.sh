@@ -2,6 +2,7 @@
 set -euo pipefail
 
 COMPOSE="docker-compose -f docker-compose.prod.yml"
+REBUILD_APP="${REBUILD_APP:-YES}"
 
 if [[ -f .env.production ]]; then
   set -a
@@ -17,6 +18,11 @@ if [[ "${RESET_DB:-}" != "YES" ]]; then
   echo "ERROR: This will DROP all data in ${DB_NAME}."
   echo "Set RESET_DB=YES to proceed."
   exit 1
+fi
+
+if [[ "${REBUILD_APP}" == "YES" ]]; then
+  echo "==> Rebuilding app container"
+  $COMPOSE up -d --build app
 fi
 
 echo "==> Dropping schema (cascade)"
