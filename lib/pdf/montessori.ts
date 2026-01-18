@@ -24,6 +24,9 @@ type Grade = {
 
 type PdfTermMode = "MIDYEAR" | "FINAL" | "BOTH"
 
+import { readFileSync } from "fs"
+import { join } from "path"
+
 type ClassInfo = {
   name: string
   schoolYearName: string
@@ -32,6 +35,15 @@ type ClassInfo = {
 
 const BRAND_LOGO_URL = "https://dcem.pl/wp-content/uploads/2022/05/sygnet_poziom_DCEM.png"
 const BRAND_NAME = "DCEM"
+const BRAND_LOGO_DATA_URI = (() => {
+  try {
+    const logoPath = join(process.cwd(), "public", "brand", "dcem-logo.png")
+    const data = readFileSync(logoPath)
+    return `data:image/png;base64,${data.toString("base64")}`
+  } catch {
+    return BRAND_LOGO_URL
+  }
+})()
 
 const escapeHtml = (value: string) =>
   value
@@ -133,7 +145,7 @@ const buildStudentSection = (
     <div class="page">
       <div class="header">
         <div class="brand">
-          <img class="logo" src="${BRAND_LOGO_URL}" alt="${BRAND_NAME}" />
+          <img class="logo" src="${BRAND_LOGO_DATA_URI}" alt="${BRAND_NAME}" />
           <div class="brand-text">${BRAND_NAME}</div>
         </div>
         <div class="title">ROK SZKOLNY ${escapeHtml(classInfo.schoolYearName)}</div>

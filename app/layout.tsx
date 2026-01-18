@@ -32,11 +32,11 @@ export default function RootLayout({
           <header className="border-b border-slate-200 bg-white">
             <div className="mx-auto flex max-w-7xl items-center gap-3 px-6 py-3">
               <img
-                src="https://dcem.pl/wp-content/uploads/2022/05/sygnet_poziom_DCEM.png"
+                src="/brand/dcem-logo.png"
                 alt="DCEM"
                 className="h-8 w-auto"
               />
-              <div className="text-sm font-semibold text-slate-700">
+              <div className="text-sm font-semibold text-[#1f4f99]">
                 DCEM · System Ocen Montessori
               </div>
             </div>
