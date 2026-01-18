@@ -32,7 +32,7 @@ export default function WychowawcaPage() {
         body: JSON.stringify({
           location: "app/wychowawca/page.tsx:28",
           message: "Sign out start",
-          data: { role: session?.user?.role ?? null },
+          data: { roles: session?.user?.roles ?? null },
           timestamp: Date.now(),
           sessionId: "debug-session",
           runId: "run1",
