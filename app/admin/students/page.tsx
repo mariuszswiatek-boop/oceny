@@ -110,10 +110,21 @@ export default function AdminStudentsPage() {
 
   const handleCreateStudent = async () => {
     setError(null)
+    const trimmedFirstName = newStudent.firstName.trim()
+    const trimmedLastName = newStudent.lastName.trim()
+    if (!trimmedFirstName || !trimmedLastName) {
+      setError("Imię i nazwisko nie mogą być puste")
+      return
+    }
     const res = await fetch("/api/admin/students", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ ...newStudent, isActive: true }),
+      body: JSON.stringify({
+        ...newStudent,
+        firstName: trimmedFirstName,
+        lastName: trimmedLastName,
+        isActive: true,
+      }),
     })
     if (!res.ok) {
       const data = await res.json().catch(() => ({}))
