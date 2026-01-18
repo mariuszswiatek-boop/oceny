@@ -174,7 +174,7 @@ export default function AdminAssignmentsPage() {
   const handleSaveAssignment = async (id: string) => {
     const edited = editedAssignments[id]
     if (!edited) return
-    await handleUpdate(`/api/admin/teacher-assignments/${id}`, {
+    await handleUpdate(id, {
       teacherId: edited.teacherId,
       classId: edited.classId,
       subjectId: edited.subjectId,
@@ -495,7 +495,7 @@ export default function AdminAssignmentsPage() {
                       <button
                         className="rounded border px-2 py-1 text-xs"
                         onClick={() =>
-                          handleUpdate(`/api/admin/teacher-assignments/${assignment.id}`, {
+                          handleUpdate(assignment.id, {
                             isActive: !assignment.isActive,
                           })
                         }
