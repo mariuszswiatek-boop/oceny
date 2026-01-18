@@ -191,8 +191,8 @@ export default function WychowawcaClassPage() {
               onChange={(e) => setTermMode(e.target.value as "MIDYEAR" | "FINAL" | "BOTH")}
               className="rounded-md border border-gray-300 bg-white px-3 py-2 text-sm text-gray-700 shadow-sm focus:border-blue-500 focus:outline-none focus:ring-blue-500"
             >
-              <option value="MIDYEAR">Semestr</option>
-              <option value="FINAL">Koniec roku</option>
+              <option value="MIDYEAR">Śródroczna</option>
+              <option value="FINAL">Końcoworoczna</option>
               <option value="BOTH">Razem</option>
             </select>
             <button
@@ -235,10 +235,10 @@ export default function WychowawcaClassPage() {
                 {subjects.map((subject) => (
                   <Fragment key={subject.id}>
                     <th className="px-4 py-2 text-center text-[10px] font-medium uppercase tracking-wider text-gray-400">
-                      Semestr
+                    Śródroczna
                     </th>
                     <th className="px-4 py-2 text-center text-[10px] font-medium uppercase tracking-wider text-gray-400">
-                      Koniec roku
+                    Końcoworoczna
                     </th>
                   </Fragment>
                 ))}

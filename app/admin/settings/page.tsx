@@ -481,13 +481,13 @@ export default function AdminSettingsPage() {
                           }
                           disabled={!year.isActive}
                         >
-                          <option value="MIDYEAR">Po semestrze</option>
-                          <option value="FINAL">Koniec roku</option>
+                        <option value="MIDYEAR">Śródroczna</option>
+                        <option value="FINAL">Końcoworoczna</option>
                         </select>
                       ) : year.gradingTerm === "MIDYEAR" ? (
-                        "Po semestrze"
+                        "Śródroczna"
                       ) : (
-                        "Koniec roku"
+                        "Końcoworoczna"
                       )}
                     </td>
                     <td>

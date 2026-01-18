@@ -245,7 +245,7 @@ export default function ClassPage() {
         <div className="mb-6 rounded-md border border-gray-200 bg-white px-4 py-3 text-sm text-gray-700">
           <div className="flex flex-wrap items-center gap-2">
             <span className="font-medium">Okres oceniania:</span>
-            <span>{term === "MIDYEAR" ? "Po semestrze" : "Koniec roku"}</span>
+            <span>{term === "MIDYEAR" ? "Śródroczna" : "Końcoworoczna"}</span>
             <span className="text-gray-400">•</span>
             <span className="font-medium">Edycja:</span>
             <span className={isGradingOpen ? "text-green-600" : "text-red-600"}>
