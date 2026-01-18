@@ -84,12 +84,14 @@ async function main() {
   // Rok szkolny
   const schoolYear = await prisma.schoolYear.upsert({
     where: { name: "2025/2026" },
-    update: { isActive: true, sortOrder: 1 },
+    update: { isActive: true, sortOrder: 1, gradingTerm: "MIDYEAR", isGradingOpen: true },
     create: {
       name: "2025/2026",
       startDate: new Date("2025-09-01"),
       endDate: new Date("2026-06-30"),
       isActive: true,
+      gradingTerm: "MIDYEAR",
+      isGradingOpen: true,
       sortOrder: 1,
     },
   })

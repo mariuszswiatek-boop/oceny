@@ -8,6 +8,8 @@ const schoolYearSchema = z.object({
   startDate: z.string().optional().nullable(),
   endDate: z.string().optional().nullable(),
   isActive: z.boolean().optional(),
+  gradingTerm: z.enum(["MIDYEAR", "FINAL"]).optional(),
+  isGradingOpen: z.boolean().optional(),
   sortOrder: z.number().int().optional(),
 })
 
@@ -39,6 +41,8 @@ export async function POST(request: Request) {
         startDate: payload.startDate ? new Date(payload.startDate) : null,
         endDate: payload.endDate ? new Date(payload.endDate) : null,
         isActive: shouldBeActive,
+        gradingTerm: payload.gradingTerm ?? "MIDYEAR",
+        isGradingOpen: payload.isGradingOpen ?? true,
         sortOrder: payload.sortOrder ?? 0,
       },
     })

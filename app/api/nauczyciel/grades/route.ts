@@ -17,6 +17,23 @@ export async function POST(request: Request) {
     const body = await request.json()
     const data = gradeSchema.parse(body)
 
+    const activeYear = await prisma.schoolYear.findFirst({
+      where: { isActive: true },
+      select: { id: true, gradingTerm: true, isGradingOpen: true },
+    })
+    if (!activeYear) {
+      return NextResponse.json({ error: "No active school year found" }, { status: 400 })
+    }
+    if (activeYear.id !== data.schoolYearId) {
+      return NextResponse.json({ error: "School year is not active" }, { status: 403 })
+    }
+    if (!activeYear.isGradingOpen) {
+      return NextResponse.json({ error: "Grading is locked" }, { status: 403 })
+    }
+    if (activeYear.gradingTerm !== data.term) {
+      return NextResponse.json({ error: "Grading term is closed" }, { status: 403 })
+    }
+
     // Pobierz klasę ucznia
     const student = await prisma.student.findUnique({
       where: { id: data.studentId },

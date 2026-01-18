@@ -44,6 +44,7 @@ export default function ClassPage() {
   const [grades, setGrades] = useState<Grade[]>([])
   const [schoolYearId, setSchoolYearId] = useState<string>("")
   const [term, setTerm] = useState<"MIDYEAR" | "FINAL">("MIDYEAR")
+  const [isGradingOpen, setIsGradingOpen] = useState(true)
   const [loading, setLoading] = useState(true)
   const [saving, setSaving] = useState<string | null>(null)
   const [toast, setToast] = useState<string | null>(null)
@@ -70,6 +71,8 @@ export default function ClassPage() {
       if (res.ok) {
         const year = await res.json()
         setSchoolYearId(year.id)
+        setTerm(year.gradingTerm === "FINAL" ? "FINAL" : "MIDYEAR")
+        setIsGradingOpen(Boolean(year.isGradingOpen))
         fetchData(year.id)
       }
     } catch (error) {
@@ -137,6 +140,11 @@ export default function ClassPage() {
     gradeScaleId: string | null
   ) => {
     if (!selectedSubject || !schoolYearId) return
+    if (!isGradingOpen) {
+      setToast("Edycja ocen jest zablokowana")
+      setTimeout(() => setToast(null), 2000)
+      return
+    }
 
     setSaving(studentId)
 
@@ -232,33 +240,15 @@ export default function ClassPage() {
           </div>
         )}
 
-        <div className="mb-6">
-          <label className="block text-sm font-medium text-gray-700">
-            Okres oceniania:
-          </label>
-          <div className="mt-2 flex gap-2">
-            <button
-              type="button"
-              onClick={() => setTerm("MIDYEAR")}
-              className={`rounded-md px-4 py-2 text-sm font-medium ${
-                term === "MIDYEAR"
-                  ? "bg-blue-600 text-white"
-                  : "bg-white text-gray-700 ring-1 ring-gray-300"
-              }`}
-            >
-              Po semestrze
-            </button>
-            <button
-              type="button"
-              onClick={() => setTerm("FINAL")}
-              className={`rounded-md px-4 py-2 text-sm font-medium ${
-                term === "FINAL"
-                  ? "bg-blue-600 text-white"
-                  : "bg-white text-gray-700 ring-1 ring-gray-300"
-              }`}
-            >
-              Koniec roku
-            </button>
+        <div className="mb-6 rounded-md border border-gray-200 bg-white px-4 py-3 text-sm text-gray-700">
+          <div className="flex flex-wrap items-center gap-2">
+            <span className="font-medium">Okres oceniania:</span>
+            <span>{term === "MIDYEAR" ? "Po semestrze" : "Koniec roku"}</span>
+            <span className="text-gray-400">•</span>
+            <span className="font-medium">Edycja:</span>
+            <span className={isGradingOpen ? "text-green-600" : "text-red-600"}>
+              {isGradingOpen ? "Odblokowana" : "Zablokowana"}
+            </span>
           </div>
         </div>
 
@@ -307,7 +297,7 @@ export default function ClassPage() {
                                   currentGrade === scale.id ? null : scale.id
                                 )
                               }
-                              disabled={saving === student.id}
+                              disabled={saving === student.id || !isGradingOpen}
                               className="h-5 w-5"
                               style={{ accentColor: scale.colorHex }}
                             />

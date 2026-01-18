@@ -9,6 +9,8 @@ type SchoolYear = {
   id: string
   name: string
   isActive: boolean
+  gradingTerm: "MIDYEAR" | "FINAL"
+  isGradingOpen: boolean
   sortOrder: number
   startDate: string | null
   endDate: string | null
@@ -279,6 +281,8 @@ export default function AdminSettingsPage() {
                   <th>Start</th>
                   <th>Koniec</th>
                   <th>Sort</th>
+                  <th>Okres ocen</th>
+                  <th>Edycja</th>
                   <th>Status</th>
                   <th></th>
                 </tr>
@@ -290,6 +294,38 @@ export default function AdminSettingsPage() {
                     <td>{year.startDate ? year.startDate.slice(0, 10) : "-"}</td>
                     <td>{year.endDate ? year.endDate.slice(0, 10) : "-"}</td>
                     <td>{year.sortOrder}</td>
+                    <td>
+                      <select
+                        className={fieldClass}
+                        value={year.gradingTerm}
+                        onChange={(e) =>
+                          handleUpdate(`/api/admin/school-years/${year.id}`, {
+                            gradingTerm: e.target.value,
+                          })
+                        }
+                        disabled={!year.isActive}
+                      >
+                        <option value="MIDYEAR">Po semestrze</option>
+                        <option value="FINAL">Koniec roku</option>
+                      </select>
+                    </td>
+                    <td>
+                      <button
+                        className={`rounded border px-2 py-1 text-xs ${
+                          year.isGradingOpen
+                            ? "border-green-200 text-green-700"
+                            : "border-gray-200 text-gray-600"
+                        }`}
+                        onClick={() =>
+                          handleUpdate(`/api/admin/school-years/${year.id}`, {
+                            isGradingOpen: !year.isGradingOpen,
+                          })
+                        }
+                        disabled={!year.isActive}
+                      >
+                        {year.isGradingOpen ? "Odblokowane" : "Zablokowane"}
+                      </button>
+                    </td>
                     <td>
                       <span className={year.isActive ? "text-green-600" : "text-gray-500"}>
                         {year.isActive ? "Aktywny" : "Archiwalny"}
@@ -317,7 +353,7 @@ export default function AdminSettingsPage() {
                 ))}
                 {schoolYears.length === 0 && (
                   <tr>
-                    <td className="py-3 text-gray-500" colSpan={6}>
+                    <td className="py-3 text-gray-500" colSpan={8}>
                       Brak danych
                     </td>
                   </tr>

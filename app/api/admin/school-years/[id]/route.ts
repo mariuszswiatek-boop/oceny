@@ -8,6 +8,8 @@ const updateSchema = z.object({
   startDate: z.string().optional().nullable(),
   endDate: z.string().optional().nullable(),
   isActive: z.boolean().optional(),
+  gradingTerm: z.enum(["MIDYEAR", "FINAL"]).optional(),
+  isGradingOpen: z.boolean().optional(),
   sortOrder: z.number().int().optional(),
 })
 
@@ -41,6 +43,8 @@ export async function PATCH(
         startDate: data.startDate === undefined ? undefined : data.startDate ? new Date(data.startDate) : null,
         endDate: data.endDate === undefined ? undefined : data.endDate ? new Date(data.endDate) : null,
         isActive: data.isActive ?? undefined,
+        gradingTerm: data.gradingTerm ?? undefined,
+        isGradingOpen: data.isGradingOpen ?? undefined,
         sortOrder: data.sortOrder ?? undefined,
       },
     })
