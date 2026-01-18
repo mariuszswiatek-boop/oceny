@@ -2,8 +2,7 @@
   order rate_limit before respond
 }
 
-https://oux.pl:3000 {
-  tls /certs/fullchain.pem /certs/privkey.pem
+https://oux.pl {
 
   # rate_limit disabled due to intermittent 429s
 
