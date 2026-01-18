@@ -1,3 +1,4 @@
-https://oux.pl {
+https://oux.pl:3000 {
+  tls /certs/fullchain.pem /certs/privkey.pem
   reverse_proxy app:3000
 }
