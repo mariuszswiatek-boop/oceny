@@ -1,36 +1,33 @@
 import { NextResponse } from "next/server"
 import type { NextRequest } from "next/server"
-import { getToken } from "next-auth/jwt"
+import { auth } from "@/app/api/auth/[...nextauth]/route"
 
-export async function middleware(request: NextRequest) {
-  const secret =
-    process.env.NEXTAUTH_SECRET ??
-    process.env.AUTH_SECRET ??
-    (process.env.NODE_ENV !== "production" ? "dev-secret" : undefined)
-
-  const token = await getToken({ req: request, secret })
+export default auth((request: NextRequest & { auth: any }) => {
   const path = request.nextUrl.pathname
+  const session = request.auth
 
-  // Jeśli nie ma tokenu, przekieruj do logowania
-  if (!token) {
+  // Jeśli nie ma sesji, przekieruj do logowania
+  if (!session?.user) {
     return NextResponse.redirect(new URL("/login", request.url))
   }
 
+  const role = session.user.role
+
   // Sprawdź uprawnienia do różnych ścieżek
-  if (path.startsWith("/admin") && token.role !== "ADMIN") {
+  if (path.startsWith("/admin") && role !== "ADMIN") {
     return NextResponse.redirect(new URL("/unauthorized", request.url))
   }
 
-  if (path.startsWith("/nauczyciel") && token.role !== "TEACHER") {
+  if (path.startsWith("/nauczyciel") && role !== "TEACHER") {
     return NextResponse.redirect(new URL("/unauthorized", request.url))
   }
 
-  if (path.startsWith("/wychowawca") && token.role !== "HOMEROOM") {
+  if (path.startsWith("/wychowawca") && role !== "HOMEROOM") {
     return NextResponse.redirect(new URL("/unauthorized", request.url))
   }
 
   return NextResponse.next()
-}
+})
 
 export const config = {
   matcher: [
