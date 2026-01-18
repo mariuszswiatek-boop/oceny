@@ -775,55 +775,95 @@ export default function AdminSettingsPage() {
                 {gradeScales.map((scale) => (
                   <tr key={scale.id} className="border-t">
                     <td className="py-2">
-                      <input
-                        className={fieldClass}
-                        value={editedGradeScales[scale.id]?.label ?? scale.label}
-                        onChange={(e) =>
-                          updateEditedGradeScale(scale.id, { label: e.target.value })
-                        }
-                      />
-                    </td>
-                    <td>
-                      <input
-                        className={fieldClass}
-                        type="color"
-                        value={editedGradeScales[scale.id]?.colorHex ?? scale.colorHex}
-                        onChange={(e) =>
-                          updateEditedGradeScale(scale.id, { colorHex: e.target.value })
-                        }
-                      />
-                    </td>
-                    <td>
-                      <input
-                        className={fieldClass}
-                        type="number"
-                        value={editedGradeScales[scale.id]?.sortOrder ?? scale.sortOrder}
-                        onChange={(e) =>
-                          updateEditedGradeScale(scale.id, { sortOrder: Number(e.target.value) })
-                        }
-                      />
-                    </td>
-                    <td>
-                      <label className="flex items-center gap-2 text-sm text-gray-700">
+                      {editingGradeScales[scale.id] ? (
                         <input
-                          type="checkbox"
-                          checked={editedGradeScales[scale.id]?.isActive ?? scale.isActive}
+                          className={fieldClass}
+                          value={editedGradeScales[scale.id]?.label ?? scale.label}
                           onChange={(e) =>
-                            updateEditedGradeScale(scale.id, { isActive: e.target.checked })
+                            updateEditedGradeScale(scale.id, { label: e.target.value })
                           }
                         />
-                        {editedGradeScales[scale.id]?.isActive ?? scale.isActive
-                          ? "Aktywna"
-                          : "Archiwalna"}
-                      </label>
+                      ) : (
+                        scale.label
+                      )}
+                    </td>
+                    <td>
+                      {editingGradeScales[scale.id] ? (
+                        <input
+                          className={fieldClass}
+                          type="color"
+                          value={editedGradeScales[scale.id]?.colorHex ?? scale.colorHex}
+                          onChange={(e) =>
+                            updateEditedGradeScale(scale.id, { colorHex: e.target.value })
+                          }
+                        />
+                      ) : (
+                        <span
+                          className="inline-flex h-5 w-8 rounded"
+                          style={{ backgroundColor: scale.colorHex }}
+                        />
+                      )}
+                    </td>
+                    <td>
+                      {editingGradeScales[scale.id] ? (
+                        <input
+                          className={fieldClass}
+                          type="number"
+                          value={editedGradeScales[scale.id]?.sortOrder ?? scale.sortOrder}
+                          onChange={(e) =>
+                            updateEditedGradeScale(scale.id, { sortOrder: Number(e.target.value) })
+                          }
+                        />
+                      ) : (
+                        scale.sortOrder
+                      )}
+                    </td>
+                    <td>
+                      {editingGradeScales[scale.id] ? (
+                        <label className="flex items-center gap-2 text-sm text-gray-700">
+                          <input
+                            type="checkbox"
+                            checked={editedGradeScales[scale.id]?.isActive ?? scale.isActive}
+                            onChange={(e) =>
+                              updateEditedGradeScale(scale.id, { isActive: e.target.checked })
+                            }
+                          />
+                          {editedGradeScales[scale.id]?.isActive ?? scale.isActive
+                            ? "Aktywna"
+                            : "Archiwalna"}
+                        </label>
+                      ) : (
+                        <span className={scale.isActive ? "text-green-600" : "text-gray-500"}>
+                          {scale.isActive ? "Aktywna" : "Archiwalna"}
+                        </span>
+                      )}
                     </td>
                     <td className="flex gap-2 py-2">
-                      <button
-                        className="rounded border px-2 py-1 text-xs"
-                        onClick={() => handleSaveGradeScale(scale.id)}
-                      >
-                        Zapisz
-                      </button>
+                      {editingGradeScales[scale.id] ? (
+                        <>
+                          <button
+                            className="rounded border px-2 py-1 text-xs"
+                            onClick={() => handleSaveGradeScale(scale.id)}
+                          >
+                            Zapisz
+                          </button>
+                          <button
+                            className="rounded border px-2 py-1 text-xs"
+                            onClick={() => handleCancelGradeScale(scale.id)}
+                          >
+                            Anuluj
+                          </button>
+                        </>
+                      ) : (
+                        <button
+                          className="rounded border px-2 py-1 text-xs"
+                          onClick={() =>
+                            setEditingGradeScales((prev) => ({ ...prev, [scale.id]: true }))
+                          }
+                        >
+                          Edytuj
+                        </button>
+                      )}
                       <button
                         className="rounded border px-2 py-1 text-xs"
                         onClick={() =>
@@ -934,78 +974,123 @@ export default function AdminSettingsPage() {
                 {classes.map((classItem) => (
                   <tr key={classItem.id} className="border-t">
                     <td className="py-2">
-                      <input
-                        className={fieldClass}
-                        value={editedClasses[classItem.id]?.name ?? classItem.name}
-                        onChange={(e) =>
-                          updateEditedClass(classItem.id, { name: e.target.value })
-                        }
-                      />
-                    </td>
-                    <td>
-                      <select
-                        className={fieldClass}
-                        value={editedClasses[classItem.id]?.schoolYearId ?? classItem.schoolYearId}
-                        onChange={(e) =>
-                          updateEditedClass(classItem.id, { schoolYearId: e.target.value })
-                        }
-                      >
-                        {schoolYears.map((year) => (
-                          <option key={year.id} value={year.id}>
-                            {year.name}
-                          </option>
-                        ))}
-                      </select>
-                    </td>
-                    <td>
-                      <select
-                        className={fieldClass}
-                        value={editedClasses[classItem.id]?.teacherId ?? classItem.teacherId ?? ""}
-                        onChange={(e) =>
-                          updateEditedClass(classItem.id, {
-                            teacherId: e.target.value || null,
-                          })
-                        }
-                      >
-                        <option value="">Brak</option>
-                        {homeroomTeachers.map((teacher) => (
-                          <option key={teacher.id} value={teacher.id}>
-                            {teacher.firstName} {teacher.lastName}
-                          </option>
-                        ))}
-                      </select>
-                    </td>
-                    <td>
-                      <input
-                        className={fieldClass}
-                        type="number"
-                        value={editedClasses[classItem.id]?.sortOrder ?? classItem.sortOrder}
-                        onChange={(e) =>
-                          updateEditedClass(classItem.id, { sortOrder: Number(e.target.value) })
-                        }
-                      />
-                    </td>
-                    <td>
-                      <label className="flex items-center gap-2 text-sm text-gray-700">
+                      {editingClasses[classItem.id] ? (
                         <input
-                          type="checkbox"
-                          checked={editedClasses[classItem.id]?.isActive ?? classItem.isActive}
+                          className={fieldClass}
+                          value={editedClasses[classItem.id]?.name ?? classItem.name}
                           onChange={(e) =>
-                            updateEditedClass(classItem.id, { isActive: e.target.checked })
+                            updateEditedClass(classItem.id, { name: e.target.value })
                           }
                         />
-                        {editedClasses[classItem.id]?.isActive ?? classItem.isActive
-                          ? "Aktywna"
-                          : "Archiwalna"}
-                      </label>
+                      ) : (
+                        classItem.name
+                      )}
+                    </td>
+                    <td>
+                      {editingClasses[classItem.id] ? (
+                        <select
+                          className={fieldClass}
+                          value={
+                            editedClasses[classItem.id]?.schoolYearId ?? classItem.schoolYearId
+                          }
+                          onChange={(e) =>
+                            updateEditedClass(classItem.id, { schoolYearId: e.target.value })
+                          }
+                        >
+                          {schoolYears.map((year) => (
+                            <option key={year.id} value={year.id}>
+                              {year.name}
+                            </option>
+                          ))}
+                        </select>
+                      ) : (
+                        classItem.schoolYear?.name ?? "-"
+                      )}
+                    </td>
+                    <td>
+                      {editingClasses[classItem.id] ? (
+                        <select
+                          className={fieldClass}
+                          value={editedClasses[classItem.id]?.teacherId ?? classItem.teacherId ?? ""}
+                          onChange={(e) =>
+                            updateEditedClass(classItem.id, {
+                              teacherId: e.target.value || null,
+                            })
+                          }
+                        >
+                          <option value="">Brak</option>
+                          {homeroomTeachers.map((teacher) => (
+                            <option key={teacher.id} value={teacher.id}>
+                              {teacher.firstName} {teacher.lastName}
+                            </option>
+                          ))}
+                        </select>
+                      ) : classItem.teacher ? (
+                        `${classItem.teacher.firstName} ${classItem.teacher.lastName}`
+                      ) : (
+                        "-"
+                      )}
+                    </td>
+                    <td>
+                      {editingClasses[classItem.id] ? (
+                        <input
+                          className={fieldClass}
+                          type="number"
+                          value={editedClasses[classItem.id]?.sortOrder ?? classItem.sortOrder}
+                          onChange={(e) =>
+                            updateEditedClass(classItem.id, { sortOrder: Number(e.target.value) })
+                          }
+                        />
+                      ) : (
+                        classItem.sortOrder
+                      )}
+                    </td>
+                    <td>
+                      {editingClasses[classItem.id] ? (
+                        <label className="flex items-center gap-2 text-sm text-gray-700">
+                          <input
+                            type="checkbox"
+                            checked={editedClasses[classItem.id]?.isActive ?? classItem.isActive}
+                            onChange={(e) =>
+                              updateEditedClass(classItem.id, { isActive: e.target.checked })
+                            }
+                          />
+                          {editedClasses[classItem.id]?.isActive ?? classItem.isActive
+                            ? "Aktywna"
+                            : "Archiwalna"}
+                        </label>
+                      ) : (
+                        <span className={classItem.isActive ? "text-green-600" : "text-gray-500"}>
+                          {classItem.isActive ? "Aktywna" : "Archiwalna"}
+                        </span>
+                      )}
                     </td>
                     <td className="flex gap-2 py-2">
-                      <button
-                        className="rounded border px-2 py-1 text-xs"
-                        onClick={() => handleSaveClass(classItem.id)}
-                      >
-                        Zapisz
-                      </button>
+                      {editingClasses[classItem.id] ? (
+                        <>
+                          <button
+                            className="rounded border px-2 py-1 text-xs"
+                            onClick={() => handleSaveClass(classItem.id)}
+                          >
+                            Zapisz
+                          </button>
+                          <button
+                            className="rounded border px-2 py-1 text-xs"
+                            onClick={() => handleCancelClass(classItem.id)}
+                          >
+                            Anuluj
+                          </button>
+                        </>
+                      ) : (
+                        <button
+                          className="rounded border px-2 py-1 text-xs"
+                          onClick={() =>
+                            setEditingClasses((prev) => ({ ...prev, [classItem.id]: true }))
+                          }
+                        >
+                          Edytuj
+                        </button>
+                      )}
                       <button
                         className="rounded border px-2 py-1 text-xs"
                         onClick={() =>
