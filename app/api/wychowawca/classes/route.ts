@@ -38,7 +38,9 @@ export async function GET() {
 
     const summaries = await Promise.all(
       classes.map(async (class_) => {
-        const totalStudents = class_._count.students
+        const totalStudents = await prisma.student.count({
+          where: { classId: class_.id, isActive: true },
+        })
         const total = totalStudents * subjectIds.length
         if (!subjectIds.length || totalStudents === 0) {
           return {
@@ -53,7 +55,8 @@ export async function GET() {
             schoolYearId: class_.schoolYear.id,
             term: class_.schoolYear.gradingTerm,
             subjectId: { in: subjectIds },
-            student: { classId: class_.id },
+            gradeScaleId: { not: null },
+            student: { classId: class_.id, isActive: true },
           },
         })
 
@@ -63,7 +66,8 @@ export async function GET() {
             schoolYearId: class_.schoolYear.id,
             term: class_.schoolYear.gradingTerm,
             subjectId: { in: subjectIds },
-            student: { classId: class_.id },
+            gradeScaleId: { not: null },
+            student: { classId: class_.id, isActive: true },
           },
           _count: { _all: true },
         })

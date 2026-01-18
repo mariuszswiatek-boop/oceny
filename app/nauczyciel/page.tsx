@@ -112,15 +112,18 @@ export default function NauczycielPage() {
   useEffect(() => {
     if (status !== "authenticated") return
     const handleFocus = () => fetchClasses(true)
+    const handlePageShow = () => fetchClasses(true)
     const handleVisibility = () => {
       if (document.visibilityState === "visible") {
         fetchClasses(true)
       }
     }
     window.addEventListener("focus", handleFocus)
+    window.addEventListener("pageshow", handlePageShow)
     document.addEventListener("visibilitychange", handleVisibility)
     return () => {
       window.removeEventListener("focus", handleFocus)
+      window.removeEventListener("pageshow", handlePageShow)
       document.removeEventListener("visibilitychange", handleVisibility)
     }
   }, [status])
