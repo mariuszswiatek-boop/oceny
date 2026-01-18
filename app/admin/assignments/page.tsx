@@ -54,7 +54,7 @@ export default function AdminAssignmentsPage() {
     schoolYearId: "",
     classId: "",
     teacherId: "",
-    subjectId: "",
+    subjectIds: [] as string[],
   })
 
   useEffect(() => {
@@ -124,15 +124,27 @@ export default function AdminAssignmentsPage() {
 
   const handleCreate = async () => {
     setError(null)
-    const res = await fetch("/api/admin/teacher-assignments", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ ...newAssignment, isActive: true }),
-    })
-    if (!res.ok) {
-      const data = await res.json().catch(() => ({}))
-      setError(data.error || "Błąd zapisu")
+    if (!newAssignment.subjectIds.length) {
+      setError("Wybierz przynajmniej jeden przedmiot")
       return
+    }
+    for (const subjectId of newAssignment.subjectIds) {
+      const res = await fetch("/api/admin/teacher-assignments", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          schoolYearId: newAssignment.schoolYearId,
+          classId: newAssignment.classId,
+          teacherId: newAssignment.teacherId,
+          subjectId,
+          isActive: true,
+        }),
+      })
+      if (!res.ok) {
+        const data = await res.json().catch(() => ({}))
+        setError(data.error || "Błąd zapisu")
+        return
+      }
     }
     await loadAll()
   }
@@ -333,18 +345,26 @@ export default function AdminAssignmentsPage() {
                 </option>
               ))}
             </select>
-            <select
-              className={fieldClass}
-              value={newAssignment.subjectId}
-              onChange={(e) => setNewAssignment({ ...newAssignment, subjectId: e.target.value })}
-            >
-              <option value="">Przedmiot</option>
-              {subjects.map((subject) => (
-                <option key={subject.id} value={subject.id}>
-                  {subject.name}
-                </option>
-              ))}
-            </select>
+            <div className="rounded border border-gray-300 bg-white px-3 py-2 text-sm text-slate-700">
+              <div className="mb-2 text-xs font-semibold text-slate-600">Przedmioty</div>
+              <div className="grid max-h-40 gap-1 overflow-y-auto">
+                {subjects.map((subject) => (
+                  <label key={subject.id} className="flex items-center gap-2 text-sm">
+                    <input
+                      type="checkbox"
+                      checked={newAssignment.subjectIds.includes(subject.id)}
+                      onChange={(e) => {
+                        const next = e.target.checked
+                          ? Array.from(new Set([...newAssignment.subjectIds, subject.id]))
+                          : newAssignment.subjectIds.filter((id) => id !== subject.id)
+                        setNewAssignment({ ...newAssignment, subjectIds: next })
+                      }}
+                    />
+                    {subject.name}
+                  </label>
+                ))}
+              </div>
+            </div>
           </div>
           <button
             onClick={handleCreate}
