@@ -64,6 +64,10 @@ export default function AdminSettingsPage() {
   const [editedSubjects, setEditedSubjects] = useState<Record<string, Subject>>({})
   const [editedGradeScales, setEditedGradeScales] = useState<Record<string, GradeScale>>({})
   const [editedClasses, setEditedClasses] = useState<Record<string, ClassItem>>({})
+  const [editingSchoolYears, setEditingSchoolYears] = useState<Record<string, boolean>>({})
+  const [editingSubjects, setEditingSubjects] = useState<Record<string, boolean>>({})
+  const [editingGradeScales, setEditingGradeScales] = useState<Record<string, boolean>>({})
+  const [editingClasses, setEditingClasses] = useState<Record<string, boolean>>({})
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
 
@@ -136,6 +140,10 @@ export default function AdminSettingsPage() {
         Object.fromEntries(scales.map((scale: GradeScale) => [scale.id, scale]))
       )
       setEditedClasses(Object.fromEntries(classes.map((classItem: ClassItem) => [classItem.id, classItem])))
+      setEditingSchoolYears(Object.fromEntries(years.map((year: SchoolYear) => [year.id, false])))
+      setEditingSubjects(Object.fromEntries(subjects.map((subject: Subject) => [subject.id, false])))
+      setEditingGradeScales(Object.fromEntries(scales.map((scale: GradeScale) => [scale.id, false])))
+      setEditingClasses(Object.fromEntries(classes.map((classItem: ClassItem) => [classItem.id, false])))
       if (!newClass.schoolYearId && years[0]?.id) {
         setNewClass((prev) => ({ ...prev, schoolYearId: years[0].id }))
       }
@@ -244,6 +252,7 @@ export default function AdminSettingsPage() {
       gradingTerm: edited.gradingTerm,
       isGradingOpen: edited.isGradingOpen,
     })
+    setEditingSchoolYears((prev) => ({ ...prev, [id]: false }))
   }
 
   const handleSaveSubject = async (id: string) => {
@@ -254,6 +263,7 @@ export default function AdminSettingsPage() {
       sortOrder: edited.sortOrder,
       isActive: edited.isActive,
     })
+    setEditingSubjects((prev) => ({ ...prev, [id]: false }))
   }
 
   const handleSaveGradeScale = async (id: string) => {
@@ -265,6 +275,7 @@ export default function AdminSettingsPage() {
       sortOrder: edited.sortOrder,
       isActive: edited.isActive,
     })
+    setEditingGradeScales((prev) => ({ ...prev, [id]: false }))
   }
 
   const handleSaveClass = async (id: string) => {
@@ -277,6 +288,35 @@ export default function AdminSettingsPage() {
       sortOrder: edited.sortOrder,
       isActive: edited.isActive,
     })
+    setEditingClasses((prev) => ({ ...prev, [id]: false }))
+  }
+
+  const handleCancelSchoolYear = (id: string) => {
+    const original = schoolYears.find((year) => year.id === id)
+    if (!original) return
+    setEditedSchoolYears((prev) => ({ ...prev, [id]: original }))
+    setEditingSchoolYears((prev) => ({ ...prev, [id]: false }))
+  }
+
+  const handleCancelSubject = (id: string) => {
+    const original = subjects.find((subject) => subject.id === id)
+    if (!original) return
+    setEditedSubjects((prev) => ({ ...prev, [id]: original }))
+    setEditingSubjects((prev) => ({ ...prev, [id]: false }))
+  }
+
+  const handleCancelGradeScale = (id: string) => {
+    const original = gradeScales.find((scale) => scale.id === id)
+    if (!original) return
+    setEditedGradeScales((prev) => ({ ...prev, [id]: original }))
+    setEditingGradeScales((prev) => ({ ...prev, [id]: false }))
+  }
+
+  const handleCancelClass = (id: string) => {
+    const original = classes.find((classItem) => classItem.id === id)
+    if (!original) return
+    setEditedClasses((prev) => ({ ...prev, [id]: original }))
+    setEditingClasses((prev) => ({ ...prev, [id]: false }))
   }
 
   if (status === "loading" || loading) {
@@ -375,71 +415,101 @@ export default function AdminSettingsPage() {
                 {schoolYears.map((year) => (
                   <tr key={year.id} className="border-t">
                     <td className="py-2">
-                      <input
-                        className={fieldClass}
-                        value={editedSchoolYears[year.id]?.name ?? year.name}
-                        onChange={(e) => updateEditedSchoolYear(year.id, { name: e.target.value })}
-                      />
-                    </td>
-                    <td>
-                      <input
-                        className={fieldClass}
-                        type="date"
-                        value={editedSchoolYears[year.id]?.startDate ?? year.startDate ?? ""}
-                        onChange={(e) =>
-                          updateEditedSchoolYear(year.id, { startDate: e.target.value })
-                        }
-                      />
-                    </td>
-                    <td>
-                      <input
-                        className={fieldClass}
-                        type="date"
-                        value={editedSchoolYears[year.id]?.endDate ?? year.endDate ?? ""}
-                        onChange={(e) =>
-                          updateEditedSchoolYear(year.id, { endDate: e.target.value })
-                        }
-                      />
-                    </td>
-                    <td>
-                      <input
-                        className={fieldClass}
-                        type="number"
-                        value={editedSchoolYears[year.id]?.sortOrder ?? year.sortOrder}
-                        onChange={(e) =>
-                          updateEditedSchoolYear(year.id, { sortOrder: Number(e.target.value) })
-                        }
-                      />
-                    </td>
-                    <td>
-                      <select
-                        className={fieldClass}
-                        value={editedSchoolYears[year.id]?.gradingTerm ?? year.gradingTerm}
-                        onChange={(e) =>
-                          updateEditedSchoolYear(year.id, {
-                            gradingTerm: e.target.value as SchoolYear["gradingTerm"],
-                          })
-                        }
-                        disabled={!year.isActive}
-                      >
-                        <option value="MIDYEAR">Po semestrze</option>
-                        <option value="FINAL">Koniec roku</option>
-                      </select>
-                    </td>
-                    <td>
-                      <label className="flex items-center gap-2 text-sm text-gray-700">
+                      {editingSchoolYears[year.id] ? (
                         <input
-                          type="checkbox"
-                          checked={editedSchoolYears[year.id]?.isGradingOpen ?? year.isGradingOpen}
+                          className={fieldClass}
+                          value={editedSchoolYears[year.id]?.name ?? year.name}
                           onChange={(e) =>
-                            updateEditedSchoolYear(year.id, { isGradingOpen: e.target.checked })
+                            updateEditedSchoolYear(year.id, { name: e.target.value })
+                          }
+                        />
+                      ) : (
+                        year.name
+                      )}
+                    </td>
+                    <td>
+                      {editingSchoolYears[year.id] ? (
+                        <input
+                          className={fieldClass}
+                          type="date"
+                          value={editedSchoolYears[year.id]?.startDate ?? year.startDate ?? ""}
+                          onChange={(e) =>
+                            updateEditedSchoolYear(year.id, { startDate: e.target.value })
+                          }
+                        />
+                      ) : (
+                        year.startDate ? year.startDate.slice(0, 10) : "-"
+                      )}
+                    </td>
+                    <td>
+                      {editingSchoolYears[year.id] ? (
+                        <input
+                          className={fieldClass}
+                          type="date"
+                          value={editedSchoolYears[year.id]?.endDate ?? year.endDate ?? ""}
+                          onChange={(e) =>
+                            updateEditedSchoolYear(year.id, { endDate: e.target.value })
+                          }
+                        />
+                      ) : (
+                        year.endDate ? year.endDate.slice(0, 10) : "-"
+                      )}
+                    </td>
+                    <td>
+                      {editingSchoolYears[year.id] ? (
+                        <input
+                          className={fieldClass}
+                          type="number"
+                          value={editedSchoolYears[year.id]?.sortOrder ?? year.sortOrder}
+                          onChange={(e) =>
+                            updateEditedSchoolYear(year.id, { sortOrder: Number(e.target.value) })
+                          }
+                        />
+                      ) : (
+                        year.sortOrder
+                      )}
+                    </td>
+                    <td>
+                      {editingSchoolYears[year.id] ? (
+                        <select
+                          className={fieldClass}
+                          value={editedSchoolYears[year.id]?.gradingTerm ?? year.gradingTerm}
+                          onChange={(e) =>
+                            updateEditedSchoolYear(year.id, {
+                              gradingTerm: e.target.value as SchoolYear["gradingTerm"],
+                            })
                           }
                           disabled={!year.isActive}
-                        />
-                        {editedSchoolYears[year.id]?.isGradingOpen ?? year.isGradingOpen
-                          ? "Odblokowane"
-                          : "Zablokowane"}
-                      </label>
+                        >
+                          <option value="MIDYEAR">Po semestrze</option>
+                          <option value="FINAL">Koniec roku</option>
+                        </select>
+                      ) : year.gradingTerm === "MIDYEAR" ? (
+                        "Po semestrze"
+                      ) : (
+                        "Koniec roku"
+                      )}
+                    </td>
+                    <td>
+                      {editingSchoolYears[year.id] ? (
+                        <label className="flex items-center gap-2 text-sm text-gray-700">
+                          <input
+                            type="checkbox"
+                            checked={editedSchoolYears[year.id]?.isGradingOpen ?? year.isGradingOpen}
+                            onChange={(e) =>
+                              updateEditedSchoolYear(year.id, { isGradingOpen: e.target.checked })
+                            }
+                            disabled={!year.isActive}
+                          />
+                          {editedSchoolYears[year.id]?.isGradingOpen ?? year.isGradingOpen
+                            ? "Odblokowane"
+                            : "Zablokowane"}
+                        </label>
+                      ) : year.isGradingOpen ? (
+                        "Odblokowane"
+                      ) : (
+                        "Zablokowane"
+                      )}
                     </td>
                     <td>
                       <span className={year.isActive ? "text-green-600" : "text-gray-500"}>
@@ -447,12 +517,31 @@ export default function AdminSettingsPage() {
                       </span>
                     </td>
                     <td className="flex gap-2 py-2">
-                      <button
-                        className="rounded border px-2 py-1 text-xs"
-                        onClick={() => handleSaveSchoolYear(year.id)}
-                      >
-                        Zapisz
-                      </button>
+                      {editingSchoolYears[year.id] ? (
+                        <>
+                          <button
+                            className="rounded border px-2 py-1 text-xs"
+                            onClick={() => handleSaveSchoolYear(year.id)}
+                          >
+                            Zapisz
+                          </button>
+                          <button
+                            className="rounded border px-2 py-1 text-xs"
+                            onClick={() => handleCancelSchoolYear(year.id)}
+                          >
+                            Anuluj
+                          </button>
+                        </>
+                      ) : (
+                        <button
+                          className="rounded border px-2 py-1 text-xs"
+                          onClick={() =>
+                            setEditingSchoolYears((prev) => ({ ...prev, [year.id]: true }))
+                          }
+                        >
+                          Edytuj
+                        </button>
+                      )}
                       <button
                         className="rounded border px-2 py-1 text-xs"
                         onClick={() =>
@@ -533,43 +622,78 @@ export default function AdminSettingsPage() {
                 {subjects.map((subject) => (
                   <tr key={subject.id} className="border-t">
                     <td className="py-2">
-                      <input
-                        className={fieldClass}
-                        value={editedSubjects[subject.id]?.name ?? subject.name}
-                        onChange={(e) => updateEditedSubject(subject.id, { name: e.target.value })}
-                      />
-                    </td>
-                    <td>
-                      <input
-                        className={fieldClass}
-                        type="number"
-                        value={editedSubjects[subject.id]?.sortOrder ?? subject.sortOrder}
-                        onChange={(e) =>
-                          updateEditedSubject(subject.id, { sortOrder: Number(e.target.value) })
-                        }
-                      />
-                    </td>
-                    <td>
-                      <label className="flex items-center gap-2 text-sm text-gray-700">
+                      {editingSubjects[subject.id] ? (
                         <input
-                          type="checkbox"
-                          checked={editedSubjects[subject.id]?.isActive ?? subject.isActive}
+                          className={fieldClass}
+                          value={editedSubjects[subject.id]?.name ?? subject.name}
                           onChange={(e) =>
-                            updateEditedSubject(subject.id, { isActive: e.target.checked })
+                            updateEditedSubject(subject.id, { name: e.target.value })
                           }
                         />
-                        {editedSubjects[subject.id]?.isActive ?? subject.isActive
-                          ? "Aktywny"
-                          : "Archiwalny"}
-                      </label>
+                      ) : (
+                        subject.name
+                      )}
+                    </td>
+                    <td>
+                      {editingSubjects[subject.id] ? (
+                        <input
+                          className={fieldClass}
+                          type="number"
+                          value={editedSubjects[subject.id]?.sortOrder ?? subject.sortOrder}
+                          onChange={(e) =>
+                            updateEditedSubject(subject.id, { sortOrder: Number(e.target.value) })
+                          }
+                        />
+                      ) : (
+                        subject.sortOrder
+                      )}
+                    </td>
+                    <td>
+                      {editingSubjects[subject.id] ? (
+                        <label className="flex items-center gap-2 text-sm text-gray-700">
+                          <input
+                            type="checkbox"
+                            checked={editedSubjects[subject.id]?.isActive ?? subject.isActive}
+                            onChange={(e) =>
+                              updateEditedSubject(subject.id, { isActive: e.target.checked })
+                            }
+                          />
+                          {editedSubjects[subject.id]?.isActive ?? subject.isActive
+                            ? "Aktywny"
+                            : "Archiwalny"}
+                        </label>
+                      ) : (
+                        <span className={subject.isActive ? "text-green-600" : "text-gray-500"}>
+                          {subject.isActive ? "Aktywny" : "Archiwalny"}
+                        </span>
+                      )}
                     </td>
                     <td className="flex gap-2 py-2">
-                      <button
-                        className="rounded border px-2 py-1 text-xs"
-                        onClick={() => handleSaveSubject(subject.id)}
-                      >
-                        Zapisz
-                      </button>
+                      {editingSubjects[subject.id] ? (
+                        <>
+                          <button
+                            className="rounded border px-2 py-1 text-xs"
+                            onClick={() => handleSaveSubject(subject.id)}
+                          >
+                            Zapisz
+                          </button>
+                          <button
+                            className="rounded border px-2 py-1 text-xs"
+                            onClick={() => handleCancelSubject(subject.id)}
+                          >
+                            Anuluj
+                          </button>
+                        </>
+                      ) : (
+                        <button
+                          className="rounded border px-2 py-1 text-xs"
+                          onClick={() =>
+                            setEditingSubjects((prev) => ({ ...prev, [subject.id]: true }))
+                          }
+                        >
+                          Edytuj
+                        </button>
+                      )}
                       <button
                         className="rounded border px-2 py-1 text-xs"
                         onClick={() =>

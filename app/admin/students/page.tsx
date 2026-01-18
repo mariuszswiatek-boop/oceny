@@ -40,6 +40,8 @@ export default function AdminStudentsPage() {
   const [contacts, setContacts] = useState<ParentContact[]>([])
   const [editedStudents, setEditedStudents] = useState<Record<string, Student>>({})
   const [editedContacts, setEditedContacts] = useState<Record<string, ParentContact>>({})
+  const [editingStudents, setEditingStudents] = useState<Record<string, boolean>>({})
+  const [editingContacts, setEditingContacts] = useState<Record<string, boolean>>({})
   const [selectedStudent, setSelectedStudent] = useState<Student | null>(null)
   const [filters, setFilters] = useState({ classId: "" })
   const [error, setError] = useState<string | null>(null)
@@ -77,6 +79,7 @@ export default function AdminStudentsPage() {
       setStudents(students)
       setClasses(classes)
       setEditedStudents(Object.fromEntries(students.map((student: Student) => [student.id, student])))
+      setEditingStudents(Object.fromEntries(students.map((student: Student) => [student.id, false])))
       if (!newStudent.classId && classes[0]?.id) {
         setNewStudent((prev) => ({ ...prev, classId: classes[0].id }))
       }
@@ -102,6 +105,7 @@ export default function AdminStudentsPage() {
     const data = await res.json()
     setContacts(data)
     setEditedContacts(Object.fromEntries(data.map((contact: ParentContact) => [contact.id, contact])))
+    setEditingContacts(Object.fromEntries(data.map((contact: ParentContact) => [contact.id, false])))
   }
 
   const handleCreateStudent = async () => {
@@ -201,6 +205,7 @@ export default function AdminStudentsPage() {
       classId: edited.classId,
       isActive: edited.isActive,
     })
+    setEditingStudents((prev) => ({ ...prev, [id]: false }))
   }
 
   const handleSaveContact = async (id: string) => {
@@ -225,6 +230,21 @@ export default function AdminStudentsPage() {
     if (selectedStudent) {
       await loadContacts(selectedStudent.id)
     }
+    setEditingContacts((prev) => ({ ...prev, [id]: false }))
+  }
+
+  const handleCancelStudent = (id: string) => {
+    const original = students.find((student) => student.id === id)
+    if (!original) return
+    setEditedStudents((prev) => ({ ...prev, [id]: original }))
+    setEditingStudents((prev) => ({ ...prev, [id]: false }))
+  }
+
+  const handleCancelContact = (id: string) => {
+    const original = contacts.find((contact) => contact.id === id)
+    if (!original) return
+    setEditedContacts((prev) => ({ ...prev, [id]: original }))
+    setEditingContacts((prev) => ({ ...prev, [id]: false }))
   }
 
   const handleSignOut = async () => {
@@ -352,61 +372,96 @@ export default function AdminStudentsPage() {
                 {students.map((student) => (
                   <tr key={student.id} className="border-t">
                     <td className="py-2 text-slate-900">
-                      <div className="grid gap-2 md:grid-cols-2">
-                        <input
-                          className={fieldClass}
-                          value={editedStudents[student.id]?.firstName ?? student.firstName}
-                          onChange={(e) =>
-                            updateEditedStudent(student.id, { firstName: e.target.value })
-                          }
-                          placeholder="Imię"
-                        />
-                        <input
-                          className={fieldClass}
-                          value={editedStudents[student.id]?.lastName ?? student.lastName}
-                          onChange={(e) =>
-                            updateEditedStudent(student.id, { lastName: e.target.value })
-                          }
-                          placeholder="Nazwisko"
-                        />
-                      </div>
+                      {editingStudents[student.id] ? (
+                        <div className="grid gap-2 md:grid-cols-2">
+                          <input
+                            className={fieldClass}
+                            value={editedStudents[student.id]?.firstName ?? student.firstName}
+                            onChange={(e) =>
+                              updateEditedStudent(student.id, { firstName: e.target.value })
+                            }
+                            placeholder="Imię"
+                          />
+                          <input
+                            className={fieldClass}
+                            value={editedStudents[student.id]?.lastName ?? student.lastName}
+                            onChange={(e) =>
+                              updateEditedStudent(student.id, { lastName: e.target.value })
+                            }
+                            placeholder="Nazwisko"
+                          />
+                        </div>
+                      ) : (
+                        <div>
+                          {student.firstName} {student.lastName}
+                        </div>
+                      )}
                     </td>
                     <td className="text-slate-900">
-                      <select
-                        className={fieldClass}
-                        value={editedStudents[student.id]?.classId ?? student.classId}
-                        onChange={(e) =>
-                          updateEditedStudent(student.id, { classId: e.target.value })
-                        }
-                      >
-                        {classOptions.map((option) => (
-                          <option key={option.value} value={option.value}>
-                            {option.label}
-                          </option>
-                        ))}
-                      </select>
+                      {editingStudents[student.id] ? (
+                        <select
+                          className={fieldClass}
+                          value={editedStudents[student.id]?.classId ?? student.classId}
+                          onChange={(e) =>
+                            updateEditedStudent(student.id, { classId: e.target.value })
+                          }
+                        >
+                          {classOptions.map((option) => (
+                            <option key={option.value} value={option.value}>
+                              {option.label}
+                            </option>
+                          ))}
+                        </select>
+                      ) : (
+                        student.class?.name ?? "-"
+                      )}
                     </td>
                     <td>
-                      <label className="flex items-center gap-2 text-sm text-gray-700">
-                        <input
-                          type="checkbox"
-                          checked={editedStudents[student.id]?.isActive ?? student.isActive}
-                          onChange={(e) =>
-                            updateEditedStudent(student.id, { isActive: e.target.checked })
-                          }
-                        />
-                        {editedStudents[student.id]?.isActive ?? student.isActive
-                          ? "Aktywny"
-                          : "Archiwalny"}
-                      </label>
+                      {editingStudents[student.id] ? (
+                        <label className="flex items-center gap-2 text-sm text-gray-700">
+                          <input
+                            type="checkbox"
+                            checked={editedStudents[student.id]?.isActive ?? student.isActive}
+                            onChange={(e) =>
+                              updateEditedStudent(student.id, { isActive: e.target.checked })
+                            }
+                          />
+                          {editedStudents[student.id]?.isActive ?? student.isActive
+                            ? "Aktywny"
+                            : "Archiwalny"}
+                        </label>
+                      ) : (
+                        <span className={student.isActive ? "text-green-600" : "text-gray-500"}>
+                          {student.isActive ? "Aktywny" : "Archiwalny"}
+                        </span>
+                      )}
                     </td>
                     <td className="flex flex-wrap gap-2 py-2">
-                      <button
-                        className="rounded border px-2 py-1 text-xs"
-                        onClick={() => handleSaveStudent(student.id)}
-                      >
-                        Zapisz
-                      </button>
+                      {editingStudents[student.id] ? (
+                        <>
+                          <button
+                            className="rounded border px-2 py-1 text-xs"
+                            onClick={() => handleSaveStudent(student.id)}
+                          >
+                            Zapisz
+                          </button>
+                          <button
+                            className="rounded border px-2 py-1 text-xs"
+                            onClick={() => handleCancelStudent(student.id)}
+                          >
+                            Anuluj
+                          </button>
+                        </>
+                      ) : (
+                        <button
+                          className="rounded border px-2 py-1 text-xs"
+                          onClick={() =>
+                            setEditingStudents((prev) => ({ ...prev, [student.id]: true }))
+                          }
+                        >
+                          Edytuj
+                        </button>
+                      )}
                       <button
                         className="rounded border px-2 py-1 text-xs"
                         onClick={() => handleUpdateStudent(student.id, { isActive: !student.isActive })}
@@ -506,69 +561,114 @@ export default function AdminStudentsPage() {
                   {contacts.map((contact) => (
                     <tr key={contact.id} className="border-t">
                     <td className="py-2 text-slate-900">
-                        <input
-                          className={fieldClass}
-                          value={editedContacts[contact.id]?.email ?? contact.email}
-                          onChange={(e) =>
-                            updateEditedContact(contact.id, { email: e.target.value })
-                          }
-                          placeholder="Email"
-                        />
-                      </td>
-                    <td className="text-slate-900">
-                        <input
-                          className={fieldClass}
-                          value={editedContacts[contact.id]?.fullName ?? contact.fullName ?? ""}
-                          onChange={(e) =>
-                            updateEditedContact(contact.id, { fullName: e.target.value })
-                          }
-                          placeholder="Imię i nazwisko"
-                        />
-                      </td>
-                    <td className="text-slate-900">
-                        <input
-                          className={fieldClass}
-                          value={editedContacts[contact.id]?.phone ?? contact.phone ?? ""}
-                          onChange={(e) =>
-                            updateEditedContact(contact.id, { phone: e.target.value })
-                          }
-                          placeholder="Telefon"
-                        />
-                      </td>
-                      <td>
-                        <label className="flex items-center gap-2 text-sm text-gray-700">
+                        {editingContacts[contact.id] ? (
                           <input
-                            type="checkbox"
-                            checked={editedContacts[contact.id]?.isPrimary ?? contact.isPrimary}
+                            className={fieldClass}
+                            value={editedContacts[contact.id]?.email ?? contact.email}
                             onChange={(e) =>
-                              updateEditedContact(contact.id, { isPrimary: e.target.checked })
+                              updateEditedContact(contact.id, { email: e.target.value })
                             }
+                            placeholder="Email"
                           />
-                          {editedContacts[contact.id]?.isPrimary ?? contact.isPrimary ? "Tak" : "Nie"}
-                        </label>
+                        ) : (
+                          contact.email
+                        )}
+                      </td>
+                    <td className="text-slate-900">
+                        {editingContacts[contact.id] ? (
+                          <input
+                            className={fieldClass}
+                            value={editedContacts[contact.id]?.fullName ?? contact.fullName ?? ""}
+                            onChange={(e) =>
+                              updateEditedContact(contact.id, { fullName: e.target.value })
+                            }
+                            placeholder="Imię i nazwisko"
+                          />
+                        ) : (
+                          contact.fullName ?? "-"
+                        )}
+                      </td>
+                    <td className="text-slate-900">
+                        {editingContacts[contact.id] ? (
+                          <input
+                            className={fieldClass}
+                            value={editedContacts[contact.id]?.phone ?? contact.phone ?? ""}
+                            onChange={(e) =>
+                              updateEditedContact(contact.id, { phone: e.target.value })
+                            }
+                            placeholder="Telefon"
+                          />
+                        ) : (
+                          contact.phone ?? "-"
+                        )}
                       </td>
                       <td>
-                        <select
-                          className={fieldClass}
-                          value={editedContacts[contact.id]?.studentId ?? contact.studentId}
-                          onChange={(e) =>
-                            updateEditedContact(contact.id, { studentId: e.target.value })
-                          }
-                        >
-                          {students.map((student) => (
-                            <option key={student.id} value={student.id}>
-                              {student.firstName} {student.lastName}
-                            </option>
-                          ))}
-                        </select>
+                        {editingContacts[contact.id] ? (
+                          <label className="flex items-center gap-2 text-sm text-gray-700">
+                            <input
+                              type="checkbox"
+                              checked={editedContacts[contact.id]?.isPrimary ?? contact.isPrimary}
+                              onChange={(e) =>
+                                updateEditedContact(contact.id, { isPrimary: e.target.checked })
+                              }
+                            />
+                            {editedContacts[contact.id]?.isPrimary ?? contact.isPrimary
+                              ? "Tak"
+                              : "Nie"}
+                          </label>
+                        ) : (
+                          contact.isPrimary ? "Tak" : "Nie"
+                        )}
                       </td>
                       <td>
-                        <button
-                          className="rounded border px-2 py-1 text-xs"
-                          onClick={() => handleSaveContact(contact.id)}
-                        >
-                          Zapisz
-                        </button>
+                        {editingContacts[contact.id] ? (
+                          <select
+                            className={fieldClass}
+                            value={editedContacts[contact.id]?.studentId ?? contact.studentId}
+                            onChange={(e) =>
+                              updateEditedContact(contact.id, { studentId: e.target.value })
+                            }
+                          >
+                            {students.map((student) => (
+                              <option key={student.id} value={student.id}>
+                                {student.firstName} {student.lastName}
+                              </option>
+                            ))}
+                          </select>
+                        ) : (
+                          students.find((s) => s.id === contact.studentId)
+                            ? `${students.find((s) => s.id === contact.studentId)!.firstName} ${
+                                students.find((s) => s.id === contact.studentId)!.lastName
+                              }`
+                            : "-"
+                        )}
+                      </td>
+                      <td>
+                        {editingContacts[contact.id] ? (
+                          <>
+                            <button
+                              className="rounded border px-2 py-1 text-xs"
+                              onClick={() => handleSaveContact(contact.id)}
+                            >
+                              Zapisz
+                            </button>
+                            <button
+                              className="rounded border px-2 py-1 text-xs"
+                              onClick={() => handleCancelContact(contact.id)}
+                            >
+                              Anuluj
+                            </button>
+                          </>
+                        ) : (
+                          <button
+                            className="rounded border px-2 py-1 text-xs"
+                            onClick={() =>
+                              setEditingContacts((prev) => ({ ...prev, [contact.id]: true }))
+                            }
+                          >
+                            Edytuj
+                          </button>
+                        )}
                         <button
                           className="rounded border border-red-200 px-2 py-1 text-xs text-red-600"
                           onClick={() => handleDeleteContact(contact.id)}

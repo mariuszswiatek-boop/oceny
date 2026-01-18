@@ -36,6 +36,8 @@ export default function AdminAssignmentsPage() {
   const { data: session, status } = useSession()
   const router = useRouter()
   const [assignments, setAssignments] = useState<Assignment[]>([])
+  const [editedAssignments, setEditedAssignments] = useState<Record<string, Assignment>>({})
+  const [editingAssignments, setEditingAssignments] = useState<Record<string, boolean>>({})
   const [users, setUsers] = useState<User[]>([])
   const [subjects, setSubjects] = useState<Subject[]>([])
   const [classes, setClasses] = useState<ClassItem[]>([])
@@ -95,6 +97,12 @@ export default function AdminAssignmentsPage() {
         yearsRes.json(),
       ])
       setAssignments(assignments)
+      setEditedAssignments(
+        Object.fromEntries(assignments.map((assignment: Assignment) => [assignment.id, assignment]))
+      )
+      setEditingAssignments(
+        Object.fromEntries(assignments.map((assignment: Assignment) => [assignment.id, false]))
+      )
       setUsers(users)
       setSubjects(subjects)
       setClasses(classes)
@@ -154,6 +162,33 @@ export default function AdminAssignmentsPage() {
       return
     }
     await loadAll()
+  }
+
+  const updateEditedAssignment = (id: string, patch: Partial<Assignment>) => {
+    setEditedAssignments((prev) => ({
+      ...prev,
+      [id]: { ...(prev[id] ?? assignments.find((a) => a.id === id)!), ...patch },
+    }))
+  }
+
+  const handleSaveAssignment = async (id: string) => {
+    const edited = editedAssignments[id]
+    if (!edited) return
+    await handleUpdate(`/api/admin/teacher-assignments/${id}`, {
+      teacherId: edited.teacherId,
+      classId: edited.classId,
+      subjectId: edited.subjectId,
+      schoolYearId: edited.schoolYearId,
+      isActive: edited.isActive,
+    })
+    setEditingAssignments((prev) => ({ ...prev, [id]: false }))
+  }
+
+  const handleCancelAssignment = (id: string) => {
+    const original = assignments.find((assignment) => assignment.id === id)
+    if (!original) return
+    setEditedAssignments((prev) => ({ ...prev, [id]: original }))
+    setEditingAssignments((prev) => ({ ...prev, [id]: false }))
   }
 
   const handleSignOut = async () => {
@@ -334,17 +369,129 @@ export default function AdminAssignmentsPage() {
                 {assignments.map((assignment) => (
                   <tr key={assignment.id} className="border-t">
                     <td className="py-2 text-slate-900">
-                      {assignment.teacher.firstName} {assignment.teacher.lastName}
+                      {editingAssignments[assignment.id] ? (
+                        <select
+                          className={fieldClass}
+                          value={editedAssignments[assignment.id]?.teacherId ?? assignment.teacherId}
+                          onChange={(e) =>
+                            updateEditedAssignment(assignment.id, { teacherId: e.target.value })
+                          }
+                        >
+                          {teachers.map((teacher) => (
+                            <option key={teacher.id} value={teacher.id}>
+                              {teacher.firstName} {teacher.lastName}
+                            </option>
+                          ))}
+                        </select>
+                      ) : (
+                        <>
+                          {assignment.teacher.firstName} {assignment.teacher.lastName}
+                        </>
+                      )}
                     </td>
-                    <td className="text-slate-900">{assignment.schoolYear.name}</td>
-                    <td className="text-slate-900">{assignment.class.name}</td>
-                    <td className="text-slate-900">{assignment.subject.name}</td>
+                    <td className="text-slate-900">
+                      {editingAssignments[assignment.id] ? (
+                        <select
+                          className={fieldClass}
+                          value={editedAssignments[assignment.id]?.schoolYearId ?? assignment.schoolYearId}
+                          onChange={(e) =>
+                            updateEditedAssignment(assignment.id, { schoolYearId: e.target.value })
+                          }
+                        >
+                          {schoolYears.map((year) => (
+                            <option key={year.id} value={year.id}>
+                              {year.name}
+                            </option>
+                          ))}
+                        </select>
+                      ) : (
+                        assignment.schoolYear.name
+                      )}
+                    </td>
+                    <td className="text-slate-900">
+                      {editingAssignments[assignment.id] ? (
+                        <select
+                          className={fieldClass}
+                          value={editedAssignments[assignment.id]?.classId ?? assignment.classId}
+                          onChange={(e) =>
+                            updateEditedAssignment(assignment.id, { classId: e.target.value })
+                          }
+                        >
+                          {classes.map((classItem) => (
+                            <option key={classItem.id} value={classItem.id}>
+                              {classItem.name} ({classItem.schoolYear?.name ?? "-"})
+                            </option>
+                          ))}
+                        </select>
+                      ) : (
+                        assignment.class.name
+                      )}
+                    </td>
+                    <td className="text-slate-900">
+                      {editingAssignments[assignment.id] ? (
+                        <select
+                          className={fieldClass}
+                          value={editedAssignments[assignment.id]?.subjectId ?? assignment.subjectId}
+                          onChange={(e) =>
+                            updateEditedAssignment(assignment.id, { subjectId: e.target.value })
+                          }
+                        >
+                          {subjects.map((subject) => (
+                            <option key={subject.id} value={subject.id}>
+                              {subject.name}
+                            </option>
+                          ))}
+                        </select>
+                      ) : (
+                        assignment.subject.name
+                      )}
+                    </td>
                     <td>
-                      <span className={assignment.isActive ? "text-green-600" : "text-gray-500"}>
-                        {assignment.isActive ? "Aktywne" : "Archiwalne"}
-                      </span>
+                      {editingAssignments[assignment.id] ? (
+                        <label className="flex items-center gap-2 text-sm text-gray-700">
+                          <input
+                            type="checkbox"
+                            checked={editedAssignments[assignment.id]?.isActive ?? assignment.isActive}
+                            onChange={(e) =>
+                              updateEditedAssignment(assignment.id, { isActive: e.target.checked })
+                            }
+                          />
+                          {editedAssignments[assignment.id]?.isActive ?? assignment.isActive
+                            ? "Aktywne"
+                            : "Archiwalne"}
+                        </label>
+                      ) : (
+                        <span className={assignment.isActive ? "text-green-600" : "text-gray-500"}>
+                          {assignment.isActive ? "Aktywne" : "Archiwalne"}
+                        </span>
+                      )}
                     </td>
                     <td className="flex gap-2 py-2">
+                      {editingAssignments[assignment.id] ? (
+                        <>
+                          <button
+                            className="rounded border px-2 py-1 text-xs"
+                            onClick={() => handleSaveAssignment(assignment.id)}
+                          >
+                            Zapisz
+                          </button>
+                          <button
+                            className="rounded border px-2 py-1 text-xs"
+                            onClick={() => handleCancelAssignment(assignment.id)}
+                          >
+                            Anuluj
+                          </button>
+                        </>
+                      ) : (
+                        <button
+                          className="rounded border px-2 py-1 text-xs"
+                          onClick={() =>
+                            setEditingAssignments((prev) => ({ ...prev, [assignment.id]: true }))
+                          }
+                        >
+                          Edytuj
+                        </button>
+                      )}
                       <button
                         className="rounded border px-2 py-1 text-xs"
                         onClick={() =>

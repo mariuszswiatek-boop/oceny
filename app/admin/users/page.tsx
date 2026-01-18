@@ -22,6 +22,7 @@ export default function AdminUsersPage() {
   const router = useRouter()
   const [users, setUsers] = useState<User[]>([])
   const [editedUsers, setEditedUsers] = useState<Record<string, User>>({})
+  const [editingUsers, setEditingUsers] = useState<Record<string, boolean>>({})
   const [error, setError] = useState<string | null>(null)
   const [loading, setLoading] = useState(true)
   const [newUser, setNewUser] = useState({
@@ -52,6 +53,7 @@ export default function AdminUsersPage() {
       const data = await res.json()
       setUsers(data)
       setEditedUsers(Object.fromEntries(data.map((user: User) => [user.id, user])))
+      setEditingUsers(Object.fromEntries(data.map((user: User) => [user.id, false])))
     } catch (e: any) {
       setError(e.message || "Błąd")
     } finally {
@@ -130,6 +132,14 @@ export default function AdminUsersPage() {
       role: edited.role,
       isActive: edited.isActive,
     })
+    setEditingUsers((prev) => ({ ...prev, [id]: false }))
+  }
+
+  const handleCancelUser = (id: string) => {
+    const original = users.find((u) => u.id === id)
+    if (!original) return
+    setEditedUsers((prev) => ({ ...prev, [id]: original }))
+    setEditingUsers((prev) => ({ ...prev, [id]: false }))
   }
 
   const handleSignOut = async () => {
@@ -236,62 +246,101 @@ export default function AdminUsersPage() {
                 {users.map((user) => (
                   <tr key={user.id} className="border-t">
                     <td className="py-2 text-slate-900">
-                      <div className="grid gap-2 md:grid-cols-2">
-                        <input
-                          className={fieldClass}
-                          value={editedUsers[user.id]?.firstName ?? user.firstName}
-                          onChange={(e) => updateEditedUser(user.id, { firstName: e.target.value })}
-                          placeholder="Imię"
-                        />
-                        <input
-                          className={fieldClass}
-                          value={editedUsers[user.id]?.lastName ?? user.lastName}
-                          onChange={(e) => updateEditedUser(user.id, { lastName: e.target.value })}
-                          placeholder="Nazwisko"
-                        />
-                      </div>
+                      {editingUsers[user.id] ? (
+                        <div className="grid gap-2 md:grid-cols-2">
+                          <input
+                            className={fieldClass}
+                            value={editedUsers[user.id]?.firstName ?? user.firstName}
+                            onChange={(e) => updateEditedUser(user.id, { firstName: e.target.value })}
+                            placeholder="Imię"
+                          />
+                          <input
+                            className={fieldClass}
+                            value={editedUsers[user.id]?.lastName ?? user.lastName}
+                            onChange={(e) => updateEditedUser(user.id, { lastName: e.target.value })}
+                            placeholder="Nazwisko"
+                          />
+                        </div>
+                      ) : (
+                        <div>
+                          {user.firstName} {user.lastName}
+                        </div>
+                      )}
                     </td>
                     <td className="text-slate-900">
-                      <input
-                        className={fieldClass}
-                        value={editedUsers[user.id]?.email ?? user.email}
-                        onChange={(e) => updateEditedUser(user.id, { email: e.target.value })}
-                        placeholder="Email"
-                      />
+                      {editingUsers[user.id] ? (
+                        <input
+                          className={fieldClass}
+                          value={editedUsers[user.id]?.email ?? user.email}
+                          onChange={(e) => updateEditedUser(user.id, { email: e.target.value })}
+                          placeholder="Email"
+                        />
+                      ) : (
+                        user.email
+                      )}
                     </td>
                     <td className="text-slate-900">
-                      <select
-                        className={fieldClass}
-                        value={editedUsers[user.id]?.role ?? user.role}
-                        onChange={(e) =>
-                          updateEditedUser(user.id, { role: e.target.value as User["role"] })
-                        }
-                      >
-                        <option value="ADMIN">ADMIN</option>
-                        <option value="TEACHER">TEACHER</option>
-                        <option value="HOMEROOM">HOMEROOM</option>
-                        <option value="READONLY">READONLY</option>
-                      </select>
+                      {editingUsers[user.id] ? (
+                        <select
+                          className={fieldClass}
+                          value={editedUsers[user.id]?.role ?? user.role}
+                          onChange={(e) =>
+                            updateEditedUser(user.id, { role: e.target.value as User["role"] })
+                          }
+                        >
+                          <option value="ADMIN">ADMIN</option>
+                          <option value="TEACHER">TEACHER</option>
+                          <option value="HOMEROOM">HOMEROOM</option>
+                          <option value="READONLY">READONLY</option>
+                        </select>
+                      ) : (
+                        user.role
+                      )}
                     </td>
                     <td>
-                      <label className="flex items-center gap-2 text-sm text-gray-700">
-                        <input
-                          type="checkbox"
-                          checked={editedUsers[user.id]?.isActive ?? user.isActive}
-                          onChange={(e) =>
-                            updateEditedUser(user.id, { isActive: e.target.checked })
-                          }
-                        />
-                        {editedUsers[user.id]?.isActive ?? user.isActive ? "Aktywny" : "Zablokowany"}
-                      </label>
+                      {editingUsers[user.id] ? (
+                        <label className="flex items-center gap-2 text-sm text-gray-700">
+                          <input
+                            type="checkbox"
+                            checked={editedUsers[user.id]?.isActive ?? user.isActive}
+                            onChange={(e) =>
+                              updateEditedUser(user.id, { isActive: e.target.checked })
+                            }
+                          />
+                          {editedUsers[user.id]?.isActive ?? user.isActive
+                            ? "Aktywny"
+                            : "Zablokowany"}
+                        </label>
+                      ) : (
+                        <span className={user.isActive ? "text-green-600" : "text-gray-500"}>
+                          {user.isActive ? "Aktywny" : "Zablokowany"}
+                        </span>
+                      )}
                     </td>
                     <td className="flex flex-wrap gap-2 py-2">
-                      <button
-                        className="rounded border px-2 py-1 text-xs"
-                        onClick={() => handleSaveUser(user.id)}
-                      >
-                        Zapisz
-                      </button>
+                      {editingUsers[user.id] ? (
+                        <>
+                          <button
+                            className="rounded border px-2 py-1 text-xs"
+                            onClick={() => handleSaveUser(user.id)}
+                          >
+                            Zapisz
+                          </button>
+                          <button
+                            className="rounded border px-2 py-1 text-xs"
+                            onClick={() => handleCancelUser(user.id)}
+                          >
+                            Anuluj
+                          </button>
+                        </>
+                      ) : (
+                        <button
+                          className="rounded border px-2 py-1 text-xs"
+                          onClick={() => setEditingUsers((prev) => ({ ...prev, [user.id]: true }))}
+                        >
+                          Edytuj
+                        </button>
+                      )}
                       <button
                         className="rounded border px-2 py-1 text-xs"
                         onClick={() => handleUpdate(user.id, { isActive: !user.isActive })}
