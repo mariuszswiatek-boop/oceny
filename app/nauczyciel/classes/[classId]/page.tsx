@@ -85,7 +85,9 @@ export default function ClassPage() {
     try {
       const [studentsRes, subjectsRes, gradeScalesRes] = await Promise.all([
         fetch(`/api/nauczyciel/classes/${classId}/students`),
-        fetch("/api/nauczyciel/subjects"),
+        fetch(
+          `/api/nauczyciel/subjects?classId=${classId}&schoolYearId=${yearId}`
+        ),
         fetch("/api/nauczyciel/grade-scales"),
       ])
 
@@ -270,7 +272,7 @@ export default function ClassPage() {
                       <th
                         key={scale.id}
                         className="px-6 py-3 text-center text-xs font-medium uppercase tracking-wider"
-                        style={{ color: scale.colorHex }}
+                        style={{ backgroundColor: scale.colorHex, color: "#ffffff" }}
                       >
                         {scale.label}
                       </th>
