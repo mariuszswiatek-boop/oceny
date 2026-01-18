@@ -117,12 +117,20 @@ export default function NauczycielPage() {
               Wybierz klasę, aby wprowadzić oceny
             </p>
           </div>
-          <button
-            onClick={handleSignOut}
-            className="rounded-md bg-gray-200 px-4 py-2 text-gray-700 hover:bg-gray-300"
-          >
-            Wyloguj
-          </button>
+          <div className="flex items-center gap-2">
+            <Link
+              href="/dashboard"
+              className="rounded-md border border-gray-300 px-4 py-2 text-gray-700 hover:bg-gray-50"
+            >
+              Wybierz panel
+            </Link>
+            <button
+              onClick={handleSignOut}
+              className="rounded-md bg-gray-200 px-4 py-2 text-gray-700 hover:bg-gray-300"
+            >
+              Wyloguj
+            </button>
+          </div>
         </div>
 
         {classes.length === 0 ? (
