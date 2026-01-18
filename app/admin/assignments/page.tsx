@@ -70,6 +70,12 @@ export default function AdminAssignmentsPage() {
     teacherId: "",
     subjectIds: [] as string[],
   })
+  const [homeroomAssignment, setHomeroomAssignment] = useState({
+    schoolYearId: "",
+    teacherId: "",
+    classIds: [] as string[],
+    mode: "assign" as "assign" | "clear",
+  })
 
   useEffect(() => {
     if (status === "unauthenticated") {
@@ -82,6 +88,10 @@ export default function AdminAssignmentsPage() {
   }, [status, session, router])
 
   const teachers = useMemo(() => users.filter((u) => u.roles.includes("TEACHER")), [users])
+  const homeroomTeachers = useMemo(
+    () => users.filter((u) => u.roles.includes("HOMEROOM")),
+    [users]
+  )
 
   const groupAssignments = (items: Assignment[]) => {
     const map = new Map<string, AssignmentGroup>()
@@ -165,6 +175,9 @@ export default function AdminAssignmentsPage() {
       if (!newAssignment.schoolYearId && years[0]?.id) {
         setNewAssignment((prev) => ({ ...prev, schoolYearId: years[0].id }))
       }
+      if (!homeroomAssignment.schoolYearId && years[0]?.id) {
+        setHomeroomAssignment((prev) => ({ ...prev, schoolYearId: years[0].id }))
+      }
     } catch (e: any) {
       setError(e.message || "Błąd ładowania")
     } finally {
@@ -201,6 +214,35 @@ export default function AdminAssignmentsPage() {
         return
       }
     }
+    await loadAll()
+  }
+
+  const handleAssignHomeroom = async () => {
+    setError(null)
+    if (!homeroomAssignment.teacherId) {
+      setError("Wybierz wychowawcę")
+      return
+    }
+    if (!homeroomAssignment.classIds.length) {
+      setError("Wybierz przynajmniej jedną klasę")
+      return
+    }
+
+    for (const classId of homeroomAssignment.classIds) {
+      const res = await fetch(`/api/admin/classes/${classId}`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          teacherId: homeroomAssignment.mode === "assign" ? homeroomAssignment.teacherId : null,
+        }),
+      })
+      if (!res.ok) {
+        const data = await res.json().catch(() => ({}))
+        setError(data.error || "Błąd zapisu")
+        return
+      }
+    }
+
     await loadAll()
   }
 
@@ -462,6 +504,99 @@ export default function AdminAssignmentsPage() {
             className="mt-3 rounded bg-gray-900 px-3 py-2 text-sm text-white"
           >
             Dodaj przypisanie
+          </button>
+        </section>
+
+        <section className="rounded-lg bg-white p-6 shadow">
+          <h2 className="text-xl font-semibold text-slate-900">
+            Przypisz klasy do wychowawcy
+          </h2>
+          <div className="mt-4 grid gap-4 md:grid-cols-4">
+            <select
+              className={fieldClass}
+              value={homeroomAssignment.schoolYearId}
+              onChange={(e) =>
+                setHomeroomAssignment({ ...homeroomAssignment, schoolYearId: e.target.value })
+              }
+            >
+              <option value="">Rok szkolny</option>
+              {schoolYears.map((year) => (
+                <option key={year.id} value={year.id}>
+                  {year.name}
+                </option>
+              ))}
+            </select>
+            <select
+              className={fieldClass}
+              value={homeroomAssignment.teacherId}
+              onChange={(e) =>
+                setHomeroomAssignment({ ...homeroomAssignment, teacherId: e.target.value })
+              }
+            >
+              <option value="">Wychowawca</option>
+              {homeroomTeachers.map((teacher) => (
+                <option key={teacher.id} value={teacher.id}>
+                  {teacher.firstName} {teacher.lastName}
+                </option>
+              ))}
+            </select>
+            <div className="rounded border border-gray-300 bg-white px-3 py-2 text-sm text-slate-700">
+              <div className="mb-2 text-xs font-semibold text-slate-600">Klasy</div>
+              <div className="grid max-h-40 gap-1 overflow-y-auto">
+                {classes
+                  .filter((classItem) =>
+                    homeroomAssignment.schoolYearId
+                      ? classItem.schoolYearId === homeroomAssignment.schoolYearId
+                      : true
+                  )
+                  .map((classItem) => (
+                    <label key={classItem.id} className="flex items-center gap-2 text-sm">
+                      <input
+                        type="checkbox"
+                        checked={homeroomAssignment.classIds.includes(classItem.id)}
+                        onChange={(e) => {
+                          const next = e.target.checked
+                            ? Array.from(new Set([...homeroomAssignment.classIds, classItem.id]))
+                            : homeroomAssignment.classIds.filter((id) => id !== classItem.id)
+                          setHomeroomAssignment({ ...homeroomAssignment, classIds: next })
+                        }}
+                      />
+                      {classItem.name} ({classItem.schoolYear?.name ?? "-"})
+                    </label>
+                  ))}
+              </div>
+            </div>
+            <div className="rounded border border-gray-300 bg-white px-3 py-2 text-sm text-slate-700">
+              <div className="mb-2 text-xs font-semibold text-slate-600">Tryb</div>
+              <label className="flex items-center gap-2 text-sm">
+                <input
+                  type="radio"
+                  name="homeroom-mode"
+                  checked={homeroomAssignment.mode === "assign"}
+                  onChange={() =>
+                    setHomeroomAssignment({ ...homeroomAssignment, mode: "assign" })
+                  }
+                />
+                Przypisz
+              </label>
+              <label className="mt-2 flex items-center gap-2 text-sm">
+                <input
+                  type="radio"
+                  name="homeroom-mode"
+                  checked={homeroomAssignment.mode === "clear"}
+                  onChange={() =>
+                    setHomeroomAssignment({ ...homeroomAssignment, mode: "clear" })
+                  }
+                />
+                Usuń przypisanie
+              </label>
+            </div>
+          </div>
+          <button
+            onClick={handleAssignHomeroom}
+            className="mt-3 rounded bg-gray-900 px-3 py-2 text-sm text-white"
+          >
+            Zapisz przypisania
           </button>
         </section>
 
