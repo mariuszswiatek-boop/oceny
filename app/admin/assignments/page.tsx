@@ -174,13 +174,16 @@ export default function AdminAssignmentsPage() {
   const handleSaveAssignment = async (id: string) => {
     const edited = editedAssignments[id]
     if (!edited) return
-    await handleUpdate(id, {
-      teacherId: edited.teacherId,
-      classId: edited.classId,
-      subjectId: edited.subjectId,
-      schoolYearId: edited.schoolYearId,
+    const isUuid = (value: string | undefined) =>
+      typeof value === "string" && /^[0-9a-fA-F-]{36}$/.test(value)
+    const payload = {
+      teacherId: isUuid(edited.teacherId) ? edited.teacherId : undefined,
+      classId: isUuid(edited.classId) ? edited.classId : undefined,
+      subjectId: isUuid(edited.subjectId) ? edited.subjectId : undefined,
+      schoolYearId: isUuid(edited.schoolYearId) ? edited.schoolYearId : undefined,
       isActive: edited.isActive,
-    })
+    }
+    await handleUpdate(id, payload)
     setEditingAssignments((prev) => ({ ...prev, [id]: false }))
   }
 
