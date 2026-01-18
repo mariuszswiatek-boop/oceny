@@ -9,6 +9,10 @@ https://oux.pl:3000 {
     path /api/auth/* /login
   }
 
+  @global {
+    not path /_next/* /brand/* /favicon.ico /file.svg /globe.svg /next.svg /vercel.svg /window.svg
+  }
+
   rate_limit @auth {
     zone auth {
       key {remote_host}
@@ -17,10 +21,10 @@ https://oux.pl:3000 {
     }
   }
 
-  rate_limit {
+  rate_limit @global {
     zone global {
       key {remote_host}
-      events 300
+      events 1200
       window 1m
     }
   }
