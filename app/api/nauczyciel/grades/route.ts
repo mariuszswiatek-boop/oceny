@@ -7,6 +7,7 @@ const gradeSchema = z.object({
   studentId: z.string().uuid(),
   subjectId: z.string().uuid(),
   schoolYearId: z.string().uuid(),
+  term: z.enum(["MIDYEAR", "FINAL"]),
   gradeScaleId: z.string().uuid().nullable(),
 })
 
@@ -46,20 +47,23 @@ export async function POST(request: Request) {
     // Zapisz lub zaktualizuj ocenę
     const grade = await prisma.studentGrade.upsert({
       where: {
-        studentId_subjectId_schoolYearId: {
+        studentId_subjectId_schoolYearId_term: {
           studentId: data.studentId,
           subjectId: data.subjectId,
           schoolYearId: data.schoolYearId,
+          term: data.term,
         },
       },
       update: {
         gradeScaleId: data.gradeScaleId,
         teacherId: user.id,
+        term: data.term,
       },
       create: {
         studentId: data.studentId,
         subjectId: data.subjectId,
         schoolYearId: data.schoolYearId,
+        term: data.term,
         gradeScaleId: data.gradeScaleId,
         teacherId: user.id,
       },
@@ -85,8 +89,9 @@ export async function GET(request: Request) {
     const classId = searchParams.get("classId")
     const subjectId = searchParams.get("subjectId")
     const schoolYearId = searchParams.get("schoolYearId")
+    const term = searchParams.get("term")
 
-    if (!classId || !subjectId || !schoolYearId) {
+    if (!classId || !subjectId || !schoolYearId || !term) {
       return NextResponse.json(
         { error: "Missing required parameters" },
         { status: 400 }
@@ -103,6 +108,7 @@ export async function GET(request: Request) {
       where: {
         subjectId,
         schoolYearId,
+        term: term === "FINAL" ? "FINAL" : "MIDYEAR",
         student: {
           classId,
         },

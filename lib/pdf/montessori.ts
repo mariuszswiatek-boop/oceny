@@ -19,6 +19,7 @@ type Grade = {
   studentId: string
   subjectId: string
   gradeScaleId: string | null
+  term: "MIDYEAR" | "FINAL"
 }
 
 type ClassInfo = {
@@ -35,9 +36,8 @@ const escapeHtml = (value: string) =>
     .replace(/"/g, "&quot;")
     .replace(/'/g, "&#39;")
 
-const buildStudentSection = (
-  student: Student,
-  classInfo: ClassInfo,
+const buildGradesTable = (
+  title: string,
   subjects: Subject[],
   gradeScales: GradeScale[],
   grades: Grade[]
@@ -75,18 +75,8 @@ const buildStudentSection = (
     .join("")
 
   return `
-    <div class="page">
-      <div class="header">
-        <div class="title">ROK SZKOLNY ${escapeHtml(classInfo.schoolYearName)}</div>
-        <div class="subtitle">OCENY ŚRÓDROCZNE</div>
-      </div>
-      <div class="meta">
-        <div><span class="label">WYCHOWAWCA:</span> ${escapeHtml(classInfo.homeroomName)}</div>
-        <div><span class="label">IMIĘ I NAZWISKO UCZNIA:</span> ${escapeHtml(
-          `${student.firstName} ${student.lastName}`
-        )}</div>
-        <div><span class="label">KLASA:</span> ${escapeHtml(classInfo.name)}</div>
-      </div>
+    <div class="section">
+      <div class="section-title">${escapeHtml(title)}</div>
       <table class="grades-table">
         <thead>
           <tr class="header-row">
@@ -108,6 +98,35 @@ const buildStudentSection = (
           ${rows}
         </tbody>
       </table>
+    </div>
+  `
+}
+
+const buildStudentSection = (
+  student: Student,
+  classInfo: ClassInfo,
+  subjects: Subject[],
+  gradeScales: GradeScale[],
+  grades: Grade[]
+) => {
+  const midyearGrades = grades.filter((grade) => grade.term === "MIDYEAR")
+  const finalGrades = grades.filter((grade) => grade.term === "FINAL")
+
+  return `
+    <div class="page">
+      <div class="header">
+        <div class="title">ROK SZKOLNY ${escapeHtml(classInfo.schoolYearName)}</div>
+        <div class="subtitle">OCENY</div>
+      </div>
+      <div class="meta">
+        <div><span class="label">WYCHOWAWCA:</span> ${escapeHtml(classInfo.homeroomName)}</div>
+        <div><span class="label">IMIĘ I NAZWISKO UCZNIA:</span> ${escapeHtml(
+          `${student.firstName} ${student.lastName}`
+        )}</div>
+        <div><span class="label">KLASA:</span> ${escapeHtml(classInfo.name)}</div>
+      </div>
+      ${buildGradesTable("OCENY ŚRÓDROCZNE", subjects, gradeScales, midyearGrades)}
+      ${buildGradesTable("OCENY ROCZNE", subjects, gradeScales, finalGrades)}
     </div>
   `
 }
@@ -139,6 +158,8 @@ export const buildStudentPdfHtml = (options: {
           .subtitle { font-size: 16px; font-weight: 700; margin-top: 6px; }
           .meta { margin-bottom: 18px; line-height: 1.6; }
           .label { font-weight: 700; margin-right: 8px; }
+          .section { margin-bottom: 18px; }
+          .section-title { font-size: 14px; font-weight: 700; margin-bottom: 8px; }
           .grades-table { width: 100%; border-collapse: collapse; }
           .grades-table th, .grades-table td {
             padding: 6px 6px;
@@ -228,6 +249,8 @@ export const buildClassPdfHtml = (options: {
           .subtitle { font-size: 16px; font-weight: 700; margin-top: 6px; }
           .meta { margin-bottom: 18px; line-height: 1.6; }
           .label { font-weight: 700; margin-right: 8px; }
+          .section { margin-bottom: 18px; }
+          .section-title { font-size: 14px; font-weight: 700; margin-bottom: 8px; }
           .grades-table { width: 100%; border-collapse: collapse; }
           .grades-table th, .grades-table td {
             padding: 6px 6px;

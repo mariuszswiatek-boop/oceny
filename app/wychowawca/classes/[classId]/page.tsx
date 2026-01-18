@@ -1,6 +1,6 @@
 "use client"
 
-import { useEffect, useState } from "react"
+import { Fragment, useEffect, useState } from "react"
 import { useSession } from "next-auth/react"
 import { useRouter, useParams } from "next/navigation"
 import Link from "next/link"
@@ -29,6 +29,7 @@ interface Grade {
   subjectId: string
   gradeScaleId: string | null
   gradeScale: GradeScale | null
+  term: "MIDYEAR" | "FINAL"
 }
 
 export default function WychowawcaClassPage() {
@@ -94,9 +95,13 @@ export default function WychowawcaClassPage() {
     }
   }
 
-  const getGradeForStudentSubject = (studentId: string, subjectId: string) => {
+  const getGradeForStudentSubject = (
+    studentId: string,
+    subjectId: string,
+    term: "MIDYEAR" | "FINAL"
+  ) => {
     return grades.find(
-      (g) => g.studentId === studentId && g.subjectId === subjectId
+      (g) => g.studentId === studentId && g.subjectId === subjectId && g.term === term
     )
   }
 
@@ -185,20 +190,39 @@ export default function WychowawcaClassPage() {
           <table className="min-w-full divide-y divide-gray-200">
             <thead className="bg-gray-50">
               <tr>
-                <th className="sticky left-0 z-10 bg-gray-50 px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-500">
+                <th
+                  rowSpan={2}
+                  className="sticky left-0 z-10 bg-gray-50 px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-500"
+                >
                   Uczeń
                 </th>
                 {subjects.map((subject) => (
                   <th
                     key={subject.id}
+                    colSpan={2}
                     className="px-6 py-3 text-center text-xs font-medium uppercase tracking-wider text-gray-500"
                   >
                     {subject.name}
                   </th>
                 ))}
-                <th className="px-6 py-3 text-center text-xs font-medium uppercase tracking-wider text-gray-500">
+                <th
+                  rowSpan={2}
+                  className="px-6 py-3 text-center text-xs font-medium uppercase tracking-wider text-gray-500"
+                >
                   PDF
                 </th>
+              </tr>
+              <tr>
+                {subjects.map((subject) => (
+                  <Fragment key={subject.id}>
+                    <th className="px-4 py-2 text-center text-[10px] font-medium uppercase tracking-wider text-gray-400">
+                      Semestr
+                    </th>
+                    <th className="px-4 py-2 text-center text-[10px] font-medium uppercase tracking-wider text-gray-400">
+                      Koniec roku
+                    </th>
+                  </Fragment>
+                ))}
               </tr>
             </thead>
             <tbody className="divide-y divide-gray-200 bg-white">
@@ -209,29 +233,59 @@ export default function WychowawcaClassPage() {
                       {student.firstName} {student.lastName}
                     </td>
                     {subjects.map((subject) => {
-                      const grade = getGradeForStudentSubject(student.id, subject.id)
+                      const midyear = getGradeForStudentSubject(
+                        student.id,
+                        subject.id,
+                        "MIDYEAR"
+                      )
+                      const final = getGradeForStudentSubject(
+                        student.id,
+                        subject.id,
+                        "FINAL"
+                      )
                       return (
-                        <td
-                          key={subject.id}
-                          className="px-6 py-4 text-center"
-                          style={{
-                            backgroundColor: grade?.gradeScale?.colorHex
-                              ? `${grade.gradeScale.colorHex}20`
-                              : "transparent",
-                          }}
-                        >
-                          {grade?.gradeScale ? (
-                            <span
-                              className="inline-block h-6 w-6 rounded-full"
-                              style={{
-                                backgroundColor: grade.gradeScale.colorHex,
-                              }}
-                              title={grade.gradeScale.label}
-                            />
-                          ) : (
-                            <span className="text-gray-400">-</span>
-                          )}
-                        </td>
+                        <Fragment key={subject.id}>
+                          <td
+                            className="px-6 py-4 text-center"
+                            style={{
+                              backgroundColor: midyear?.gradeScale?.colorHex
+                                ? `${midyear.gradeScale.colorHex}20`
+                                : "transparent",
+                            }}
+                          >
+                            {midyear?.gradeScale ? (
+                              <span
+                                className="inline-block h-6 w-6 rounded-full"
+                                style={{
+                                  backgroundColor: midyear.gradeScale.colorHex,
+                                }}
+                                title={midyear.gradeScale.label}
+                              />
+                            ) : (
+                              <span className="text-gray-400">-</span>
+                            )}
+                          </td>
+                          <td
+                            className="px-6 py-4 text-center"
+                            style={{
+                              backgroundColor: final?.gradeScale?.colorHex
+                                ? `${final.gradeScale.colorHex}20`
+                                : "transparent",
+                            }}
+                          >
+                            {final?.gradeScale ? (
+                              <span
+                                className="inline-block h-6 w-6 rounded-full"
+                                style={{
+                                  backgroundColor: final.gradeScale.colorHex,
+                                }}
+                                title={final.gradeScale.label}
+                              />
+                            ) : (
+                              <span className="text-gray-400">-</span>
+                            )}
+                          </td>
+                        </Fragment>
                       )
                     })}
                     <td className="px-6 py-4 text-center">

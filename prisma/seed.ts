@@ -270,6 +270,7 @@ async function main() {
         studentId: student1.id,
         subjectId: subjects.find((s) => s.name === "Język polski")!.id,
         schoolYearId: schoolYear.id,
+        term: "MIDYEAR",
         gradeScaleId: gradeScaleIds[2], // DOBRZE OPANOWAŁ
         teacherId: nauczyciel1.id,
       },
@@ -277,6 +278,7 @@ async function main() {
         studentId: student1.id,
         subjectId: subjects.find((s) => s.name === "Matematyka")!.id,
         schoolYearId: schoolYear.id,
+        term: "MIDYEAR",
         gradeScaleId: gradeScaleIds[3], // DOSKONALE OPANOWAŁ
         teacherId: nauczyciel2.id,
       },
@@ -284,8 +286,25 @@ async function main() {
         studentId: student2.id,
         subjectId: subjects.find((s) => s.name === "Język polski")!.id,
         schoolYearId: schoolYear.id,
+        term: "MIDYEAR",
         gradeScaleId: gradeScaleIds[1], // ŚREDNIO OPANOWAŁ
         teacherId: nauczyciel1.id,
+      },
+      {
+        studentId: student1.id,
+        subjectId: subjects.find((s) => s.name === "Język polski")!.id,
+        schoolYearId: schoolYear.id,
+        term: "FINAL",
+        gradeScaleId: gradeScaleIds[3], // DOSKONALE OPANOWAŁ
+        teacherId: nauczyciel1.id,
+      },
+      {
+        studentId: student2.id,
+        subjectId: subjects.find((s) => s.name === "Matematyka")!.id,
+        schoolYearId: schoolYear.id,
+        term: "FINAL",
+        gradeScaleId: gradeScaleIds[2], // DOBRZE OPANOWAŁ
+        teacherId: nauczyciel2.id,
       },
     ],
     skipDuplicates: true,

@@ -18,6 +18,11 @@ enum UserRole {
   READONLY
 }
 
+enum GradeTerm {
+  MIDYEAR
+  FINAL
+}
+
 model User {
   id        String   @id @default(uuid())
   email     String   @unique
@@ -155,6 +160,7 @@ model StudentGrade {
   studentId String
   subjectId String
   schoolYearId String
+  term         GradeTerm @default(MIDYEAR)
   gradeScaleId String?
   teacherId    String
   updatedAt    DateTime @updatedAt
@@ -167,9 +173,10 @@ model StudentGrade {
   gradeScale  MontessoriGradeScale? @relation(fields: [gradeScaleId], references: [id], onDelete: SetNull)
   teacher     User               @relation(fields: [teacherId], references: [id])
 
-  @@unique([studentId, subjectId, schoolYearId])
+  @@unique([studentId, subjectId, schoolYearId, term])
   @@index([studentId])
   @@index([subjectId])
   @@index([schoolYearId])
+  @@index([term])
   @@index([teacherId])
 }

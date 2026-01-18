@@ -63,6 +63,7 @@ export async function GET(
           studentId: true,
           subjectId: true,
           gradeScaleId: true,
+          term: true,
         },
       }),
     ])

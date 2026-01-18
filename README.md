@@ -1,6 +1,6 @@
 # System Ocen Montessori
 
-Aplikacja webowa do zarządzania ocenami śródrocznymi w szkole Montessori. System pozwala nauczycielom wprowadzać oceny według skali Montessori, wychowawcom przeglądać oceny całej klasy i generować PDF z kartami ocen.
+Aplikacja webowa do zarządzania ocenami śródrocznymi i rocznymi w szkole Montessori. System pozwala nauczycielom wprowadzać oceny według skali Montessori, wychowawcom przeglądać oceny całej klasy i generować PDF z kartami ocen.
 
 ## Technologie
 
@@ -137,8 +137,8 @@ Po uruchomieniu seed, możesz zalogować się używając następujących kont:
 - `GET /api/nauczyciel/classes` - Lista klas nauczyciela
 - `GET /api/nauczyciel/subjects` - Lista przedmiotów nauczyciela
 - `GET /api/nauczyciel/classes/[classId]/students` - Lista uczniów w klasie
-- `GET /api/nauczyciel/grades` - Pobierz oceny (query: classId, subjectId, schoolYearId)
-- `POST /api/nauczyciel/grades` - Zapisz/aktualizuj ocenę
+- `GET /api/nauczyciel/grades` - Pobierz oceny (query: classId, subjectId, schoolYearId, term)
+- `POST /api/nauczyciel/grades` - Zapisz/aktualizuj ocenę (body: term)
 - `GET /api/nauczyciel/grade-scales` - Pobierz skalę ocen
 
 ### Wychowawca
@@ -163,7 +163,7 @@ Po uruchomieniu seed, możesz zalogować się używając następujących kont:
 - **Subject** - Przedmiot (słownik)
 - **TeacherAssignment** - Przypisanie nauczyciela do przedmiotu i klasy
 - **MontessoriGradeScale** - Skala ocen Montessori (4 poziomy z kolorami)
-- **StudentGrade** - Ocena ucznia (student + przedmiot + rok szkolny -> ocena)
+- **StudentGrade** - Ocena ucznia (student + przedmiot + rok szkolny + okres -> ocena)
 
 ### Skala ocen Montessori
 
@@ -189,14 +189,14 @@ Po uruchomieniu seed, możesz zalogować się używając następujących kont:
 
 ### Wychowawca
 - Wybór klasy (swojej)
-- Tabela: uczniowie w wierszach, przedmioty w kolumnach, w komórkach ocena (kolor)
+- Tabela: uczniowie w wierszach, przedmioty w kolumnach, w komórkach ocena (kolor) dla semestru i końca roku
 - Generowanie PDF:
   - Dla jednego ucznia
   - Masowo: dla całej klasy (ZIP z osobnymi plikami lub jeden wielostronicowy PDF)
 
 ### PDF
 - Układ zgodny z wymaganiami
-- Nagłówek: "ROK SZKOLNY" i "OCENY ŚRÓDROCZNE"
+- Nagłówek: "ROK SZKOLNY" i sekcje "OCENY ŚRÓDROCZNE" oraz "OCENY ROCZNE"
 - Pola: HOMEROOM, IMIĘ I NAZWISKO UCZNIA, KLASA
 - Tabela z przedmiotami i kolumnami ocen (zaznaczenie kółkiem w odpowiednim kolorze)
 - Kolumna "Podpis nauczyciela"

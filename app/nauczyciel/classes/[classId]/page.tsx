@@ -28,6 +28,7 @@ interface Grade {
   studentId: string
   subjectId: string
   gradeScaleId: string | null
+  term: "MIDYEAR" | "FINAL"
 }
 
 export default function ClassPage() {
@@ -42,6 +43,7 @@ export default function ClassPage() {
   const [gradeScales, setGradeScales] = useState<GradeScale[]>([])
   const [grades, setGrades] = useState<Grade[]>([])
   const [schoolYearId, setSchoolYearId] = useState<string>("")
+  const [term, setTerm] = useState<"MIDYEAR" | "FINAL">("MIDYEAR")
   const [loading, setLoading] = useState(true)
   const [saving, setSaving] = useState<string | null>(null)
   const [toast, setToast] = useState<string | null>(null)
@@ -112,14 +114,14 @@ export default function ClassPage() {
     if (selectedSubject && schoolYearId) {
       fetchGrades()
     }
-  }, [selectedSubject, classId, schoolYearId])
+  }, [selectedSubject, classId, schoolYearId, term])
 
   const fetchGrades = async () => {
     if (!selectedSubject || !schoolYearId) return
 
     try {
       const res = await fetch(
-        `/api/nauczyciel/grades?classId=${classId}&subjectId=${selectedSubject}&schoolYearId=${schoolYearId}`
+        `/api/nauczyciel/grades?classId=${classId}&subjectId=${selectedSubject}&schoolYearId=${schoolYearId}&term=${term}`
       )
       if (res.ok) {
         const data = await res.json()
@@ -148,6 +150,7 @@ export default function ClassPage() {
           studentId,
           subjectId: selectedSubject,
           schoolYearId,
+          term,
           gradeScaleId,
         }),
       })
@@ -156,7 +159,12 @@ export default function ClassPage() {
         const newGrade = await res.json()
         setGrades((prev) => {
           const filtered = prev.filter(
-            (g) => !(g.studentId === studentId && g.subjectId === selectedSubject)
+            (g) =>
+              !(
+                g.studentId === studentId &&
+                g.subjectId === selectedSubject &&
+                g.term === term
+              )
           )
           return [...filtered, newGrade]
         })
@@ -174,7 +182,7 @@ export default function ClassPage() {
 
   const getGradeForStudent = (studentId: string) => {
     return grades.find(
-      (g) => g.studentId === studentId && g.subjectId === selectedSubject
+      (g) => g.studentId === studentId && g.subjectId === selectedSubject && g.term === term
     )?.gradeScaleId
   }
 
@@ -223,6 +231,36 @@ export default function ClassPage() {
             </select>
           </div>
         )}
+
+        <div className="mb-6">
+          <label className="block text-sm font-medium text-gray-700">
+            Okres oceniania:
+          </label>
+          <div className="mt-2 flex gap-2">
+            <button
+              type="button"
+              onClick={() => setTerm("MIDYEAR")}
+              className={`rounded-md px-4 py-2 text-sm font-medium ${
+                term === "MIDYEAR"
+                  ? "bg-blue-600 text-white"
+                  : "bg-white text-gray-700 ring-1 ring-gray-300"
+              }`}
+            >
+              Po semestrze
+            </button>
+            <button
+              type="button"
+              onClick={() => setTerm("FINAL")}
+              className={`rounded-md px-4 py-2 text-sm font-medium ${
+                term === "FINAL"
+                  ? "bg-blue-600 text-white"
+                  : "bg-white text-gray-700 ring-1 ring-gray-300"
+              }`}
+            >
+              Koniec roku
+            </button>
+          </div>
+        </div>
 
         {selectedSubject && (
           <div className="rounded-lg bg-white shadow">
