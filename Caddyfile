@@ -21,13 +21,6 @@ https://oux.pl:3000 {
     }
   }
 
-  rate_limit @global {
-    zone global {
-      key {remote_host}
-      events 1200
-      window 1m
-    }
-  }
 
   request_body {
     max_size 2MB
