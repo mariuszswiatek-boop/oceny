@@ -90,8 +90,11 @@ export default function NauczycielPage() {
     }
   }, [status, session, router])
 
-  const fetchClasses = async () => {
+  const fetchClasses = async (silent = false) => {
     try {
+      if (!silent) {
+        setLoading(true)
+      }
       const res = await fetch("/api/nauczyciel/classes")
       if (res.ok) {
         const data = await res.json()
@@ -100,9 +103,27 @@ export default function NauczycielPage() {
     } catch (error) {
       console.error("Error fetching classes:", error)
     } finally {
-      setLoading(false)
+      if (!silent) {
+        setLoading(false)
+      }
     }
   }
+
+  useEffect(() => {
+    if (status !== "authenticated") return
+    const handleFocus = () => fetchClasses(true)
+    const handleVisibility = () => {
+      if (document.visibilityState === "visible") {
+        fetchClasses(true)
+      }
+    }
+    window.addEventListener("focus", handleFocus)
+    document.addEventListener("visibilitychange", handleVisibility)
+    return () => {
+      window.removeEventListener("focus", handleFocus)
+      document.removeEventListener("visibilitychange", handleVisibility)
+    }
+  }, [status])
 
   if (status === "loading" || loading) {
     return (

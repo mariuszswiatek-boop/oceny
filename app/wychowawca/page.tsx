@@ -15,6 +15,10 @@ interface Class {
   _count: {
     students: number
   }
+  summary: {
+    missingGrades: number
+    studentsMissing: number
+  }
 }
 
 export default function WychowawcaPage() {
@@ -152,6 +156,10 @@ export default function WychowawcaPage() {
                 </p>
                 <p className="mt-1 text-sm text-gray-600">
                   Uczniów: {class_._count.students}
+                </p>
+                <p className="mt-1 text-sm text-gray-600">
+                  Brakujące oceny: {class_.summary?.missingGrades ?? 0} · Uczniów z brakami:{" "}
+                  {class_.summary?.studentsMissing ?? 0}
                 </p>
               </Link>
             ))}
