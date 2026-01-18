@@ -6,6 +6,9 @@ CREATE TYPE "UserRole_new" AS ENUM ('ADMIN', 'TEACHER', 'HOMEROOM', 'READONLY');
 ALTER TABLE "User" ADD COLUMN "isActive" BOOLEAN NOT NULL DEFAULT true;
 
 ALTER TABLE "User"
+  ALTER COLUMN "role" DROP DEFAULT;
+
+ALTER TABLE "User"
   ALTER COLUMN "role" TYPE TEXT
   USING ("role"::text);
 
@@ -18,6 +21,8 @@ ALTER TABLE "User"
 
 DROP TYPE "UserRole";
 ALTER TYPE "UserRole_new" RENAME TO "UserRole";
+
+ALTER TABLE "User" ALTER COLUMN "role" SET DEFAULT 'READONLY';
 
 -- SchoolYear updates
 ALTER TABLE "SchoolYear" ALTER COLUMN "startDate" DROP NOT NULL;
