@@ -199,10 +199,18 @@ export default function AdminStudentsPage() {
   const handleSaveStudent = async (id: string) => {
     const edited = editedStudents[id]
     if (!edited) return
+    const trimmedFirstName = edited.firstName.trim()
+    const trimmedLastName = edited.lastName.trim()
+    if (!trimmedFirstName || !trimmedLastName) {
+      setError("Imię i nazwisko nie mogą być puste")
+      return
+    }
+    const isUuid = (value: string | undefined) =>
+      typeof value === "string" && /^[0-9a-fA-F-]{36}$/.test(value)
     await handleUpdateStudent(id, {
-      firstName: edited.firstName,
-      lastName: edited.lastName,
-      classId: edited.classId,
+      firstName: trimmedFirstName,
+      lastName: trimmedLastName,
+      classId: isUuid(edited.classId) ? edited.classId : undefined,
       isActive: edited.isActive,
     })
     setEditingStudents((prev) => ({ ...prev, [id]: false }))
