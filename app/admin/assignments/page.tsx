@@ -14,7 +14,13 @@ type User = {
 
 type Subject = { id: string; name: string }
 type SchoolYear = { id: string; name: string; isActive: boolean }
-type ClassItem = { id: string; name: string; schoolYearId: string; schoolYear?: SchoolYear }
+type ClassItem = {
+  id: string
+  name: string
+  schoolYearId: string
+  teacherId?: string | null
+  schoolYear?: SchoolYear
+}
 
 type Assignment = {
   id: string
@@ -39,6 +45,13 @@ type AssignmentGroup = {
   schoolYear: SchoolYear
   subjects: Array<{ id: string; name: string; assignmentId: string; isActive: boolean }>
   isActive: boolean
+}
+
+type HomeroomGroup = {
+  key: string
+  teacher: User
+  schoolYear: SchoolYear
+  classes: ClassItem[]
 }
 
 const fieldClass =
@@ -92,6 +105,34 @@ export default function AdminAssignmentsPage() {
     () => users.filter((u) => u.roles.includes("HOMEROOM")),
     [users]
   )
+  const usersById = useMemo(() => new Map(users.map((user) => [user.id, user])), [users])
+
+  const homeroomGroups = useMemo(() => {
+    const map = new Map<string, HomeroomGroup>()
+    for (const classItem of classes) {
+      if (!classItem.teacherId) continue
+      if (homeroomAssignment.schoolYearId && classItem.schoolYearId !== homeroomAssignment.schoolYearId) {
+        continue
+      }
+      const teacher = usersById.get(classItem.teacherId)
+      const schoolYear = classItem.schoolYear
+      if (!teacher || !schoolYear) continue
+      const key = `${teacher.id}|${schoolYear.id}`
+      const existing = map.get(key)
+      if (existing) {
+        existing.classes.push(classItem)
+      } else {
+        map.set(key, { key, teacher, schoolYear, classes: [classItem] })
+      }
+    }
+    return Array.from(map.values()).sort((a, b) => {
+      const lastName = a.teacher.lastName.localeCompare(b.teacher.lastName)
+      if (lastName !== 0) return lastName
+      const firstName = a.teacher.firstName.localeCompare(b.teacher.firstName)
+      if (firstName !== 0) return firstName
+      return a.schoolYear.name.localeCompare(b.schoolYear.name)
+    })
+  }, [classes, homeroomAssignment.schoolYearId, usersById])
 
   const groupAssignments = (items: Assignment[]) => {
     const map = new Map<string, AssignmentGroup>()
@@ -598,6 +639,53 @@ export default function AdminAssignmentsPage() {
           >
             Zapisz przypisania
           </button>
+        </section>
+
+        <section className="rounded-lg bg-white p-6 shadow">
+          <div className="flex flex-wrap items-center justify-between gap-3">
+            <h2 className="text-xl font-semibold text-slate-900">
+              Wychowawcy i klasy
+            </h2>
+            <div className="text-sm text-slate-500">
+              {homeroomAssignment.schoolYearId
+                ? `Rok: ${schoolYears.find((y) => y.id === homeroomAssignment.schoolYearId)?.name ?? "-"}`
+                : "Wszystkie lata"}
+            </div>
+          </div>
+          <div className="mt-4 overflow-x-auto">
+            <table className="w-full text-sm">
+              <thead>
+                <tr className="text-left text-slate-700">
+                  <th className="py-2">Wychowawca</th>
+                  <th>Rok</th>
+                  <th>Klasy</th>
+                </tr>
+              </thead>
+              <tbody className="text-slate-900">
+                {homeroomGroups.map((group) => (
+                  <tr key={group.key} className="border-t">
+                    <td className="py-2">
+                      {group.teacher.firstName} {group.teacher.lastName}
+                    </td>
+                    <td>{group.schoolYear.name}</td>
+                    <td>
+                      {group.classes
+                        .sort((a, b) => a.name.localeCompare(b.name))
+                        .map((classItem) => classItem.name)
+                        .join(", ")}
+                    </td>
+                  </tr>
+                ))}
+                {homeroomGroups.length === 0 && (
+                  <tr>
+                    <td className="py-3 text-gray-500" colSpan={3}>
+                      Brak przypisań wychowawców
+                    </td>
+                  </tr>
+                )}
+              </tbody>
+            </table>
+          </div>
         </section>
 
         <section className="rounded-lg bg-white p-6 shadow">
