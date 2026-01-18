@@ -137,4 +137,33 @@ body {
     box-shadow: 0 0 0 2px color-mix(in srgb, var(--focus) 35%, transparent);
     border-color: var(--focus);
   }
+
+  @media (max-width: 640px) {
+    .text-3xl {
+      font-size: 1.5rem;
+      line-height: 2rem;
+    }
+
+    .text-xl {
+      font-size: 1.125rem;
+      line-height: 1.75rem;
+    }
+
+    button {
+      padding: 0.375rem 0.75rem;
+      font-size: 0.75rem;
+    }
+
+    input,
+    select,
+    textarea {
+      padding: 0.5rem 0.75rem;
+      font-size: 0.875rem;
+    }
+
+    table th,
+    table td {
+      padding: 0.375rem 0.5rem;
+    }
+  }
 }
