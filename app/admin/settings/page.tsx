@@ -31,22 +31,13 @@ type GradeScale = {
   isActive: boolean
 }
 
-type User = {
-  id: string
-  firstName: string
-  lastName: string
-  roles: Array<"ADMIN" | "TEACHER" | "HOMEROOM" | "READONLY">
-}
-
 type ClassItem = {
   id: string
   name: string
   schoolYearId: string
-  teacherId: string | null
   sortOrder: number
   isActive: boolean
   schoolYear?: SchoolYear
-  teacher?: User | null
 }
 
 const fieldClass =
@@ -59,7 +50,6 @@ export default function AdminSettingsPage() {
   const [subjects, setSubjects] = useState<Subject[]>([])
   const [gradeScales, setGradeScales] = useState<GradeScale[]>([])
   const [classes, setClasses] = useState<ClassItem[]>([])
-  const [users, setUsers] = useState<User[]>([])
   const [editedSchoolYears, setEditedSchoolYears] = useState<Record<string, SchoolYear>>({})
   const [editedSubjects, setEditedSubjects] = useState<Record<string, Subject>>({})
   const [editedGradeScales, setEditedGradeScales] = useState<Record<string, GradeScale>>({})
@@ -88,7 +78,6 @@ export default function AdminSettingsPage() {
   const [newClass, setNewClass] = useState({
     name: "",
     schoolYearId: "",
-    teacherId: "",
     sortOrder: 1,
     isActive: true,
   })
@@ -103,37 +92,29 @@ export default function AdminSettingsPage() {
     }
   }, [status, session, router])
 
-  const homeroomTeachers = useMemo(
-    () => users.filter((u) => u.roles.includes("HOMEROOM")),
-    [users]
-  )
-
   const loadAll = async () => {
     setLoading(true)
     setError(null)
     try {
-      const [yearsRes, subjectsRes, scalesRes, classesRes, usersRes] = await Promise.all([
+      const [yearsRes, subjectsRes, scalesRes, classesRes] = await Promise.all([
         fetch("/api/admin/school-years"),
         fetch("/api/admin/subjects"),
         fetch("/api/admin/grade-scales"),
         fetch("/api/admin/classes"),
-        fetch("/api/admin/users"),
       ])
-      if (!yearsRes.ok || !subjectsRes.ok || !scalesRes.ok || !classesRes.ok || !usersRes.ok) {
+      if (!yearsRes.ok || !subjectsRes.ok || !scalesRes.ok || !classesRes.ok) {
         throw new Error("Nie udało się pobrać danych")
       }
-      const [years, subjects, scales, classes, users] = await Promise.all([
+      const [years, subjects, scales, classes] = await Promise.all([
         yearsRes.json(),
         subjectsRes.json(),
         scalesRes.json(),
         classesRes.json(),
-        usersRes.json(),
       ])
       setSchoolYears(years)
       setSubjects(subjects)
       setGradeScales(scales)
       setClasses(classes)
-      setUsers(users)
       setEditedSchoolYears(Object.fromEntries(years.map((year: SchoolYear) => [year.id, year])))
       setEditedSubjects(Object.fromEntries(subjects.map((subject: Subject) => [subject.id, subject])))
       setEditedGradeScales(
@@ -284,7 +265,6 @@ export default function AdminSettingsPage() {
     await handleUpdate(`/api/admin/classes/${id}`, {
       name: edited.name,
       schoolYearId: edited.schoolYearId,
-      teacherId: edited.teacherId || null,
       sortOrder: edited.sortOrder,
       isActive: edited.isActive,
     })
@@ -916,18 +896,6 @@ export default function AdminSettingsPage() {
                 </option>
               ))}
             </select>
-            <select
-              className={fieldClass}
-              value={newClass.teacherId}
-              onChange={(e) => setNewClass({ ...newClass, teacherId: e.target.value })}
-            >
-              <option value="">Wychowawca</option>
-              {homeroomTeachers.map((teacher) => (
-                <option key={teacher.id} value={teacher.id}>
-                  {teacher.firstName} {teacher.lastName}
-                </option>
-              ))}
-            </select>
             <input
               className={fieldClass}
               type="number"
@@ -940,13 +908,11 @@ export default function AdminSettingsPage() {
                   "/api/admin/classes",
                   {
                     ...newClass,
-                    teacherId: newClass.teacherId || null,
                   },
                   () =>
                     setNewClass({
                       name: "",
                       schoolYearId: schoolYears[0]?.id ?? "",
-                      teacherId: "",
                       sortOrder: 1,
                       isActive: true,
                     })
@@ -964,7 +930,6 @@ export default function AdminSettingsPage() {
                 <tr className="text-left text-slate-700">
                   <th className="py-2">Klasa</th>
                   <th>Rok</th>
-                  <th>Wychowawca</th>
                   <th>Sort</th>
                   <th>Status</th>
                   <th></th>
@@ -1005,30 +970,6 @@ export default function AdminSettingsPage() {
                         </select>
                       ) : (
                         classItem.schoolYear?.name ?? "-"
-                      )}
-                    </td>
-                    <td>
-                      {editingClasses[classItem.id] ? (
-                        <select
-                          className={fieldClass}
-                          value={editedClasses[classItem.id]?.teacherId ?? classItem.teacherId ?? ""}
-                          onChange={(e) =>
-                            updateEditedClass(classItem.id, {
-                              teacherId: e.target.value || null,
-                            })
-                          }
-                        >
-                          <option value="">Brak</option>
-                          {homeroomTeachers.map((teacher) => (
-                            <option key={teacher.id} value={teacher.id}>
-                              {teacher.firstName} {teacher.lastName}
-                            </option>
-                          ))}
-                        </select>
-                      ) : classItem.teacher ? (
-                        `${classItem.teacher.firstName} ${classItem.teacher.lastName}`
-                      ) : (
-                        "-"
                       )}
                     </td>
                     <td>

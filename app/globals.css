@@ -28,6 +28,36 @@
     --border: #1e293b;
     --focus: #60a5fa;
   }
+
+  .bg-white {
+    background-color: var(--surface);
+  }
+
+  .bg-gray-50 {
+    background-color: #0b1220;
+  }
+
+  .text-gray-900,
+  .text-slate-900 {
+    color: var(--foreground);
+  }
+
+  .text-gray-600,
+  .text-slate-600 {
+    color: var(--muted);
+  }
+
+  .border-gray-300 {
+    border-color: #334155;
+  }
+
+  input,
+  select,
+  textarea {
+    background-color: var(--surface);
+    color: var(--foreground);
+    border-color: #334155;
+  }
 }
 
 body {
