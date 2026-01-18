@@ -2,7 +2,15 @@
 set -euo pipefail
 
 COMPOSE="docker-compose -f docker-compose.prod.yml"
-DB_USER="${DB_USER:-${POSTGRES_USER:-postgres}}"
+
+if [[ -f .env.production ]]; then
+  set -a
+  # shellcheck disable=SC1091
+  source .env.production
+  set +a
+fi
+
+DB_USER="${DB_USER:-${POSTGRES_USER:-postgres1}}"
 DB_NAME="${DB_NAME:-${POSTGRES_DB:-oceny}}"
 
 if [[ "${RESET_DB:-}" != "YES" ]]; then
