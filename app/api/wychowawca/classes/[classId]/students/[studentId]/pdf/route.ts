@@ -10,6 +10,13 @@ const toSafeFilename = (value: string) =>
     .replace(/\s+/g, "_")
 import { buildStudentPdfHtml } from "@/lib/pdf/montessori"
 
+const formatTimestamp = (date: Date) => {
+  const pad = (value: number) => value.toString().padStart(2, "0")
+  return `${date.getFullYear()}-${pad(date.getMonth() + 1)}-${pad(date.getDate())}_${pad(
+    date.getHours()
+  )}-${pad(date.getMinutes())}`
+}
+
 export async function GET(
   request: Request,
   { params }: { params: Promise<{ classId: string; studentId: string }> }
@@ -19,6 +26,9 @@ export async function GET(
     const { classId, studentId } = await params
     const { searchParams } = new URL(request.url)
     const schoolYearId = searchParams.get("schoolYearId")
+    const termParam = searchParams.get("term")
+    const termMode =
+      termParam === "MIDYEAR" ? "MIDYEAR" : termParam === "FINAL" ? "FINAL" : "BOTH"
 
     if (!schoolYearId) {
       return NextResponse.json({ error: "Missing schoolYearId" }, { status: 400 })
@@ -89,6 +99,7 @@ export async function GET(
       subjects,
       gradeScales,
       grades,
+      termMode,
     })
 
     const pdfBuffer = await renderPdfFromHtml(html)
@@ -98,8 +109,12 @@ export async function GET(
     ) as ArrayBuffer
     const pdfBlob = new Blob([pdfArrayBuffer], { type: "application/pdf" })
 
+    const termLabel =
+      termMode === "MIDYEAR" ? "semestr" : termMode === "FINAL" ? "koniec_roku" : "razem"
     const filename = toSafeFilename(
-      `oceny_${student.firstName}_${student.lastName}_${student.class.name}.pdf`
+      `oceny_${student.firstName}_${student.lastName}_${student.class.name}_${termLabel}_${formatTimestamp(
+        new Date()
+      )}.pdf`
     )
 
     return new NextResponse(pdfBlob, {

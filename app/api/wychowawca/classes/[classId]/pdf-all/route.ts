@@ -11,6 +11,13 @@ const toSafeFilename = (value: string) =>
     .replace(/[\\/?%*:|"<>]/g, "")
     .replace(/\s+/g, "_")
 
+const formatTimestamp = (date: Date) => {
+  const pad = (value: number) => value.toString().padStart(2, "0")
+  return `${date.getFullYear()}-${pad(date.getMonth() + 1)}-${pad(date.getDate())}_${pad(
+    date.getHours()
+  )}-${pad(date.getMinutes())}`
+}
+
 export async function GET(
   request: Request,
   { params }: { params: Promise<{ classId: string }> }
@@ -20,6 +27,9 @@ export async function GET(
     const { classId } = await params
     const { searchParams } = new URL(request.url)
     const schoolYearId = searchParams.get("schoolYearId")
+    const termParam = searchParams.get("term")
+    const termMode =
+      termParam === "MIDYEAR" ? "MIDYEAR" : termParam === "FINAL" ? "FINAL" : "BOTH"
 
     if (!schoolYearId) {
       return NextResponse.json({ error: "Missing schoolYearId" }, { status: 400 })
@@ -87,10 +97,15 @@ export async function GET(
         subjects,
         gradeScales,
         grades: studentGrades,
+        termMode,
       })
       const pdfBuffer = await renderPdfFromHtml(html)
+      const termLabel =
+        termMode === "MIDYEAR" ? "semestr" : termMode === "FINAL" ? "koniec_roku" : "razem"
       const filename = toSafeFilename(
-        `oceny_${student.firstName}_${student.lastName}_${class_.name}.pdf`
+        `oceny_${student.firstName}_${student.lastName}_${class_.name}_${termLabel}_${formatTimestamp(
+          new Date()
+        )}.pdf`
       )
       zip.file(filename, pdfBuffer)
     }
@@ -101,7 +116,11 @@ export async function GET(
       zipBuffer.byteOffset + zipBuffer.byteLength
     ) as ArrayBuffer
     const zipBlob = new Blob([zipArrayBuffer], { type: "application/zip" })
-    const zipFilename = toSafeFilename(`oceny_${class_.name}.zip`)
+    const termLabel =
+      termMode === "MIDYEAR" ? "semestr" : termMode === "FINAL" ? "koniec_roku" : "razem"
+    const zipFilename = toSafeFilename(
+      `oceny_${class_.name}_${termLabel}_${formatTimestamp(new Date())}.zip`
+    )
 
     return new NextResponse(zipBlob, {
       headers: {

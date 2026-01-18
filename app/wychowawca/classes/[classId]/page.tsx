@@ -43,6 +43,7 @@ export default function WychowawcaClassPage() {
   const [gradeScales, setGradeScales] = useState<GradeScale[]>([])
   const [grades, setGrades] = useState<Grade[]>([])
   const [schoolYearId, setSchoolYearId] = useState<string>("")
+  const [termMode, setTermMode] = useState<"MIDYEAR" | "FINAL" | "BOTH">("BOTH")
   const [loading, setLoading] = useState(true)
   const [generatingPdf, setGeneratingPdf] = useState<string | null>(null)
 
@@ -110,11 +111,13 @@ export default function WychowawcaClassPage() {
 
     setGeneratingPdf(studentId || "all")
 
+    const termQuery = termMode === "BOTH" ? "" : `&term=${termMode}`
+
     try {
       if (studentId) {
         // Pojedynczy uczeń
         const res = await fetch(
-          `/api/wychowawca/classes/${classId}/students/${studentId}/pdf?schoolYearId=${schoolYearId}`
+          `/api/wychowawca/classes/${classId}/students/${studentId}/pdf?schoolYearId=${schoolYearId}${termQuery}`
         )
         if (res.ok) {
           const blob = await res.blob()
@@ -130,7 +133,7 @@ export default function WychowawcaClassPage() {
       } else {
         // Cała klasa (wielostronicowy PDF)
         const res = await fetch(
-          `/api/wychowawca/classes/${classId}/pdf-all?schoolYearId=${schoolYearId}`
+          `/api/wychowawca/classes/${classId}/pdf-all?schoolYearId=${schoolYearId}${termQuery}`
         )
         if (res.ok) {
           const blob = await res.blob()
@@ -176,6 +179,15 @@ export default function WychowawcaClassPage() {
             </h1>
           </div>
           <div className="flex gap-2">
+            <select
+              value={termMode}
+              onChange={(e) => setTermMode(e.target.value as "MIDYEAR" | "FINAL" | "BOTH")}
+              className="rounded-md border border-gray-300 bg-white px-3 py-2 text-sm text-gray-700 shadow-sm focus:border-blue-500 focus:outline-none focus:ring-blue-500"
+            >
+              <option value="MIDYEAR">Semestr</option>
+              <option value="FINAL">Koniec roku</option>
+              <option value="BOTH">Razem</option>
+            </select>
             <button
               onClick={() => handleGeneratePdf()}
               disabled={generatingPdf === "all"}

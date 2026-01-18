@@ -22,6 +22,8 @@ type Grade = {
   term: "MIDYEAR" | "FINAL"
 }
 
+type PdfTermMode = "MIDYEAR" | "FINAL" | "BOTH"
+
 type ClassInfo = {
   name: string
   schoolYearName: string
@@ -107,16 +109,30 @@ const buildStudentSection = (
   classInfo: ClassInfo,
   subjects: Subject[],
   gradeScales: GradeScale[],
-  grades: Grade[]
+  grades: Grade[],
+  termMode: PdfTermMode
 ) => {
   const midyearGrades = grades.filter((grade) => grade.term === "MIDYEAR")
   const finalGrades = grades.filter((grade) => grade.term === "FINAL")
+  const subtitle =
+    termMode === "BOTH"
+      ? "OCENY"
+      : termMode === "MIDYEAR"
+        ? "OCENY ŚRÓDROCZNE"
+        : "OCENY ROCZNE"
+  const sections =
+    termMode === "BOTH"
+      ? `${buildGradesTable("OCENY ŚRÓDROCZNE", subjects, gradeScales, midyearGrades)}
+      ${buildGradesTable("OCENY ROCZNE", subjects, gradeScales, finalGrades)}`
+      : termMode === "MIDYEAR"
+        ? buildGradesTable("OCENY ŚRÓDROCZNE", subjects, gradeScales, midyearGrades)
+        : buildGradesTable("OCENY ROCZNE", subjects, gradeScales, finalGrades)
 
   return `
     <div class="page">
       <div class="header">
         <div class="title">ROK SZKOLNY ${escapeHtml(classInfo.schoolYearName)}</div>
-        <div class="subtitle">OCENY</div>
+        <div class="subtitle">${subtitle}</div>
       </div>
       <div class="meta">
         <div><span class="label">WYCHOWAWCA:</span> ${escapeHtml(classInfo.homeroomName)}</div>
@@ -125,8 +141,7 @@ const buildStudentSection = (
         )}</div>
         <div><span class="label">KLASA:</span> ${escapeHtml(classInfo.name)}</div>
       </div>
-      ${buildGradesTable("OCENY ŚRÓDROCZNE", subjects, gradeScales, midyearGrades)}
-      ${buildGradesTable("OCENY ROCZNE", subjects, gradeScales, finalGrades)}
+      ${sections}
     </div>
   `
 }
@@ -137,6 +152,7 @@ export const buildStudentPdfHtml = (options: {
   subjects: Subject[]
   gradeScales: GradeScale[]
   grades: Grade[]
+  termMode: PdfTermMode
 }) => {
   return `
     <!doctype html>
@@ -197,7 +213,8 @@ export const buildStudentPdfHtml = (options: {
           options.classInfo,
           options.subjects,
           options.gradeScales,
-          options.grades
+          options.grades,
+          options.termMode
         )}
       </body>
     </html>
@@ -210,6 +227,7 @@ export const buildClassPdfHtml = (options: {
   subjects: Subject[]
   gradeScales: GradeScale[]
   grades: Grade[]
+  termMode: PdfTermMode
 }) => {
   const sections = options.students
     .map((student, idx) => {
@@ -219,7 +237,8 @@ export const buildClassPdfHtml = (options: {
         options.classInfo,
         options.subjects,
         options.gradeScales,
-        studentGrades
+        studentGrades,
+        options.termMode
       )
       if (idx === options.students.length - 1) {
         return section
