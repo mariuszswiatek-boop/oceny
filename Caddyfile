@@ -5,21 +5,7 @@
 https://oux.pl:3000 {
   tls /certs/fullchain.pem /certs/privkey.pem
 
-  @auth {
-    path /api/auth/* /login
-  }
-
-  @global {
-    not path /_next/* /brand/* /favicon.ico /file.svg /globe.svg /next.svg /vercel.svg /window.svg
-  }
-
-  rate_limit @auth {
-    zone auth {
-      key {remote_host}
-      events 10
-      window 1m
-    }
-  }
+  # rate_limit disabled due to intermittent 429s
 
 
   request_body {
