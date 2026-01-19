@@ -51,3 +51,40 @@ Kroki konfiguracji:
 1. Wykonaj kroki z sekcji instalacji.
 2. Zrob push na `main` i sprawdz logi workflow w GitHub Actions.
 3. Po wdrozeniu aplikacja bedzie dostepna pod `NEXTAUTH_URL`.
+
+### 5) Codzienne backupy do pliku + Google Drive
+
+Backupy uruchamiane sa w kontenerze `backup` raz dziennie przez cron.
+Pliki `.sql.gz` sa zapisywane lokalnie w katalogu `./backups`,
+a nastepnie (opcjonalnie) wysylane na Google Drive przez `rclone`.
+
+Konfiguracja:
+1. Na serwerze utworz konfiguracje rclone dla Google Drive:
+
+```bash
+rclone config
+```
+
+2. Skopiuj config do katalogu projektu:
+
+```bash
+mkdir -p /opt/oceny/rclone
+cp ~/.config/rclone/rclone.conf /opt/oceny/rclone/rclone.conf
+```
+
+3. Ustaw w `.env.production` (przykladowe wartosci sa w `env.production.example`):
+   - `BACKUP_SCHEDULE` (cron, np. `0 2 * * *`)
+   - `BACKUP_RETENTION_DAYS` (np. `14`)
+   - `RCLONE_REMOTE` (np. `gdrive:oceny`)
+
+4. Upewnij sie, ze katalog na backupy istnieje:
+
+```bash
+mkdir -p /opt/oceny/backups
+```
+
+5. Uruchom/restartuj kontenery:
+
+```bash
+docker compose -f docker-compose.prod.yml up -d --build
+```

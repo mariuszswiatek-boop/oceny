@@ -44,6 +44,28 @@ services:
       postgres:
         condition: service_healthy
 
+  backup:
+    build:
+      context: .
+      dockerfile: docker/backup/Dockerfile
+    container_name: oceny-backup
+    restart: unless-stopped
+    env_file:
+      - .env.production
+    environment:
+      POSTGRES_HOST: postgres
+      BACKUP_DIR: /backups
+      BACKUP_RETENTION_DAYS: 14
+      BACKUP_SCHEDULE: "0 2 * * *"
+      RCLONE_REMOTE: gdrive:oceny
+      RCLONE_CONFIG: /config/rclone/rclone.conf
+    volumes:
+      - ./backups:/backups
+      - ./rclone:/config/rclone:ro
+    depends_on:
+      postgres:
+        condition: service_healthy
+
 volumes:
   caddy_data:
   caddy_config:
