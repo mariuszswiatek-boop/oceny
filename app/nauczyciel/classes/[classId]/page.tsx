@@ -21,6 +21,8 @@ interface GradeScale {
   label: string
   colorHex: string
   sortOrder: number
+  appliesToMidyear: boolean
+  appliesToFinal: boolean
 }
 
 interface Grade {
@@ -71,9 +73,10 @@ export default function ClassPage() {
       if (res.ok) {
         const year = await res.json()
         setSchoolYearId(year.id)
-        setTerm(year.gradingTerm === "FINAL" ? "FINAL" : "MIDYEAR")
+        const gradingTerm = year.gradingTerm === "FINAL" ? "FINAL" : "MIDYEAR"
+        setTerm(gradingTerm)
         setIsGradingOpen(Boolean(year.isGradingOpen))
-        fetchData(year.id)
+        fetchData(year.id, gradingTerm)
       }
     } catch (error) {
       console.error("Error fetching active year:", error)
@@ -81,14 +84,14 @@ export default function ClassPage() {
     }
   }
 
-  const fetchData = async (yearId: string) => {
+  const fetchData = async (yearId: string, gradingTerm: "MIDYEAR" | "FINAL") => {
     try {
       const [studentsRes, subjectsRes, gradeScalesRes] = await Promise.all([
         fetch(`/api/nauczyciel/classes/${classId}/students`),
         fetch(
           `/api/nauczyciel/subjects?classId=${classId}&schoolYearId=${yearId}`
         ),
-        fetch("/api/nauczyciel/grade-scales"),
+        fetch(`/api/nauczyciel/grade-scales?term=${gradingTerm}`),
       ])
 
       if (studentsRes.ok) {

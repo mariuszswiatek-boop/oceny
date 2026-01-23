@@ -10,42 +10,110 @@ async function main() {
   const gradeScales = await Promise.all([
     prisma.montessoriGradeScale.upsert({
       where: { label: "NIE/SŁABO OPANOWAŁ" },
-      update: { colorHex: "#FF0000", sortOrder: 1, isActive: true },
+      update: {
+        colorHex: "#FF0000",
+        sortOrder: 1,
+        isActive: true,
+        appliesToMidyear: true,
+        appliesToFinal: true,
+      },
       create: {
         label: "NIE/SŁABO OPANOWAŁ",
         colorHex: "#FF0000", // czerwony
         sortOrder: 1,
         isActive: true,
+        appliesToMidyear: true,
+        appliesToFinal: true,
       },
     }),
     prisma.montessoriGradeScale.upsert({
       where: { label: "ŚREDNIO OPANOWAŁ" },
-      update: { colorHex: "#FFFF00", sortOrder: 2, isActive: true },
+      update: {
+        colorHex: "#FFFF00",
+        sortOrder: 2,
+        isActive: true,
+        appliesToMidyear: true,
+        appliesToFinal: true,
+      },
       create: {
         label: "ŚREDNIO OPANOWAŁ",
         colorHex: "#FFFF00", // żółty
         sortOrder: 2,
         isActive: true,
+        appliesToMidyear: true,
+        appliesToFinal: true,
       },
     }),
     prisma.montessoriGradeScale.upsert({
       where: { label: "DOBRZE OPANOWAŁ" },
-      update: { colorHex: "#90EE90", sortOrder: 3, isActive: true },
+      update: {
+        colorHex: "#90EE90",
+        sortOrder: 3,
+        isActive: true,
+        appliesToMidyear: true,
+        appliesToFinal: true,
+      },
       create: {
         label: "DOBRZE OPANOWAŁ",
         colorHex: "#90EE90", // zielony jasny
         sortOrder: 3,
         isActive: true,
+        appliesToMidyear: true,
+        appliesToFinal: true,
       },
     }),
     prisma.montessoriGradeScale.upsert({
       where: { label: "DOSKONALE OPANOWAŁ" },
-      update: { colorHex: "#006400", sortOrder: 4, isActive: true },
+      update: {
+        colorHex: "#006400",
+        sortOrder: 4,
+        isActive: true,
+        appliesToMidyear: true,
+        appliesToFinal: true,
+      },
       create: {
         label: "DOSKONALE OPANOWAŁ",
         colorHex: "#006400", // zielony mocny
         sortOrder: 4,
         isActive: true,
+        appliesToMidyear: true,
+        appliesToFinal: true,
+      },
+    }),
+    prisma.montessoriGradeScale.upsert({
+      where: { label: "KOŃCOWOROCZNA - DODATKOWA 1" },
+      update: {
+        colorHex: "#4B5563",
+        sortOrder: 5,
+        isActive: true,
+        appliesToMidyear: false,
+        appliesToFinal: true,
+      },
+      create: {
+        label: "KOŃCOWOROCZNA - DODATKOWA 1",
+        colorHex: "#4B5563",
+        sortOrder: 5,
+        isActive: true,
+        appliesToMidyear: false,
+        appliesToFinal: true,
+      },
+    }),
+    prisma.montessoriGradeScale.upsert({
+      where: { label: "KOŃCOWOROCZNA - DODATKOWA 2" },
+      update: {
+        colorHex: "#1F2937",
+        sortOrder: 6,
+        isActive: true,
+        appliesToMidyear: false,
+        appliesToFinal: true,
+      },
+      create: {
+        label: "KOŃCOWOROCZNA - DODATKOWA 2",
+        colorHex: "#1F2937",
+        sortOrder: 6,
+        isActive: true,
+        appliesToMidyear: false,
+        appliesToFinal: true,
       },
     }),
   ])

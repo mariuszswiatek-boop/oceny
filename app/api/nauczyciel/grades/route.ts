@@ -61,6 +61,21 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: "Student not in class" }, { status: 400 })
     }
 
+    if (data.gradeScaleId) {
+      const gradeScale = await prisma.montessoriGradeScale.findUnique({
+        where: { id: data.gradeScaleId },
+        select: { isActive: true, appliesToMidyear: true, appliesToFinal: true },
+      })
+      if (!gradeScale || !gradeScale.isActive) {
+        return NextResponse.json({ error: "Grade scale is inactive" }, { status: 400 })
+      }
+      const isAllowed =
+        data.term === "FINAL" ? gradeScale.appliesToFinal : gradeScale.appliesToMidyear
+      if (!isAllowed) {
+        return NextResponse.json({ error: "Grade scale not allowed for this term" }, { status: 400 })
+      }
+    }
+
     // Zapisz lub zaktualizuj ocenę
     const grade = await prisma.studentGrade.upsert({
       where: {

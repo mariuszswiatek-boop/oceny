@@ -8,6 +8,8 @@ const updateSchema = z.object({
   colorHex: z.string().min(4).optional(),
   sortOrder: z.number().int().optional(),
   isActive: z.boolean().optional(),
+  appliesToMidyear: z.boolean().optional(),
+  appliesToFinal: z.boolean().optional(),
 })
 
 export async function PATCH(

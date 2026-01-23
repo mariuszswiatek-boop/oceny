@@ -29,6 +29,8 @@ type GradeScale = {
   colorHex: string
   sortOrder: number
   isActive: boolean
+  appliesToMidyear: boolean
+  appliesToFinal: boolean
 }
 
 type ClassItem = {
@@ -74,6 +76,8 @@ export default function AdminSettingsPage() {
     colorHex: "#FF0000",
     sortOrder: 1,
     isActive: true,
+    appliesToMidyear: true,
+    appliesToFinal: true,
   })
   const [newClass, setNewClass] = useState({
     name: "",
@@ -707,7 +711,7 @@ export default function AdminSettingsPage() {
 
         <section className="rounded-lg bg-white p-6 shadow">
           <h2 className="text-xl font-semibold text-slate-900">Skala Montessori</h2>
-          <div className="mt-4 grid gap-4 md:grid-cols-4">
+          <div className="mt-4 grid gap-4 md:grid-cols-6">
             <input
               className={fieldClass}
               placeholder="Label"
@@ -728,10 +732,37 @@ export default function AdminSettingsPage() {
                 setNewGradeScale({ ...newGradeScale, sortOrder: Number(e.target.value) })
               }
             />
+            <label className="flex items-center gap-2 text-sm text-gray-700">
+              <input
+                type="checkbox"
+                checked={newGradeScale.appliesToMidyear}
+                onChange={(e) =>
+                  setNewGradeScale({ ...newGradeScale, appliesToMidyear: e.target.checked })
+                }
+              />
+              Śródroczna
+            </label>
+            <label className="flex items-center gap-2 text-sm text-gray-700">
+              <input
+                type="checkbox"
+                checked={newGradeScale.appliesToFinal}
+                onChange={(e) =>
+                  setNewGradeScale({ ...newGradeScale, appliesToFinal: e.target.checked })
+                }
+              />
+              Końcoworoczna
+            </label>
             <button
               onClick={() =>
                 handleCreate("/api/admin/grade-scales", newGradeScale, () =>
-                  setNewGradeScale({ label: "", colorHex: "#FF0000", sortOrder: 1, isActive: true })
+                  setNewGradeScale({
+                    label: "",
+                    colorHex: "#FF0000",
+                    sortOrder: 1,
+                    isActive: true,
+                    appliesToMidyear: true,
+                    appliesToFinal: true,
+                  })
                 )
               }
               className="rounded bg-gray-900 px-3 py-2 text-sm text-white"
@@ -747,6 +778,8 @@ export default function AdminSettingsPage() {
                   <th className="py-2">Label</th>
                   <th>Kolor</th>
                   <th>Sort</th>
+                  <th>Śródroczna</th>
+                  <th>Końcoworoczna</th>
                   <th>Status</th>
                   <th></th>
                 </tr>
@@ -796,6 +829,48 @@ export default function AdminSettingsPage() {
                         />
                       ) : (
                         scale.sortOrder
+                      )}
+                    </td>
+                    <td>
+                      {editingGradeScales[scale.id] ? (
+                        <label className="flex items-center gap-2 text-sm text-gray-700">
+                          <input
+                            type="checkbox"
+                            checked={
+                              editedGradeScales[scale.id]?.appliesToMidyear ?? scale.appliesToMidyear
+                            }
+                            onChange={(e) =>
+                              updateEditedGradeScale(scale.id, {
+                                appliesToMidyear: e.target.checked,
+                              })
+                            }
+                          />
+                          {editedGradeScales[scale.id]?.appliesToMidyear ?? scale.appliesToMidyear
+                            ? "Tak"
+                            : "Nie"}
+                        </label>
+                      ) : (
+                        <span>{scale.appliesToMidyear ? "Tak" : "Nie"}</span>
+                      )}
+                    </td>
+                    <td>
+                      {editingGradeScales[scale.id] ? (
+                        <label className="flex items-center gap-2 text-sm text-gray-700">
+                          <input
+                            type="checkbox"
+                            checked={editedGradeScales[scale.id]?.appliesToFinal ?? scale.appliesToFinal}
+                            onChange={(e) =>
+                              updateEditedGradeScale(scale.id, {
+                                appliesToFinal: e.target.checked,
+                              })
+                            }
+                          />
+                          {editedGradeScales[scale.id]?.appliesToFinal ?? scale.appliesToFinal
+                            ? "Tak"
+                            : "Nie"}
+                        </label>
+                      ) : (
+                        <span>{scale.appliesToFinal ? "Tak" : "Nie"}</span>
                       )}
                     </td>
                     <td>
@@ -865,7 +940,7 @@ export default function AdminSettingsPage() {
                 ))}
                 {gradeScales.length === 0 && (
                   <tr>
-                    <td className="py-3 text-gray-500" colSpan={5}>
+                    <td className="py-3 text-gray-500" colSpan={7}>
                       Brak danych
                     </td>
                   </tr>

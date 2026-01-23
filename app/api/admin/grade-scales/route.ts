@@ -8,6 +8,8 @@ const gradeScaleSchema = z.object({
   colorHex: z.string().min(4),
   sortOrder: z.number().int(),
   isActive: z.boolean().optional(),
+  appliesToMidyear: z.boolean().optional(),
+  appliesToFinal: z.boolean().optional(),
 })
 
 export async function GET() {
@@ -35,6 +37,8 @@ export async function POST(request: Request) {
         colorHex: data.colorHex,
         sortOrder: data.sortOrder,
         isActive: data.isActive ?? true,
+        appliesToMidyear: data.appliesToMidyear ?? true,
+        appliesToFinal: data.appliesToFinal ?? true,
       },
     })
     return NextResponse.json(scale, { status: 201 })

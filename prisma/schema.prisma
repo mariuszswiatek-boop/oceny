@@ -150,6 +150,8 @@ model MontessoriGradeScale {
   colorHex  String   // np. "#FF0000"
   sortOrder Int      @unique
   isActive  Boolean  @default(true)
+  appliesToMidyear Boolean @default(true)
+  appliesToFinal   Boolean @default(true)
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
