@@ -5,12 +5,6 @@ import { prisma } from "@/lib/prisma"
 export async function GET() {
   try {
     const user = await requireRole("HOMEROOM")
-    const activeSubjects = await prisma.subject.findMany({
-      where: { isActive: true },
-      select: { id: true },
-      orderBy: [{ sortOrder: "asc" }, { name: "asc" }],
-    })
-
     const classes = await prisma.class.findMany({
       where: {
         teacherId: user.id,
@@ -34,13 +28,30 @@ export async function GET() {
       },
     })
 
-    const subjectIds = activeSubjects.map((subject) => subject.id)
+    const assignments = await prisma.teacherAssignment.findMany({
+      where: {
+        classId: { in: classes.map((class_) => class_.id) },
+        schoolYearId: { in: classes.map((class_) => class_.schoolYear.id) },
+        isActive: true,
+      },
+      select: {
+        classId: true,
+        subjectId: true,
+      },
+    })
+    const subjectIdsByClass = new Map<string, Set<string>>()
+    for (const assignment of assignments) {
+      const set = subjectIdsByClass.get(assignment.classId) ?? new Set<string>()
+      set.add(assignment.subjectId)
+      subjectIdsByClass.set(assignment.classId, set)
+    }
 
     const summaries = await Promise.all(
       classes.map(async (class_) => {
         const totalStudents = await prisma.student.count({
           where: { classId: class_.id, isActive: true },
         })
+        const subjectIds = Array.from(subjectIdsByClass.get(class_.id) ?? [])
         const total = totalStudents * subjectIds.length
         if (!subjectIds.length || totalStudents === 0) {
           return {

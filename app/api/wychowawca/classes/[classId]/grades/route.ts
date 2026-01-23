@@ -33,11 +33,22 @@ export async function GET(
       ],
     })
 
-    // Pobierz wszystkie przedmioty
-    const subjects = await prisma.subject.findMany({
-      orderBy: {
-        name: "asc",
+    const assignments = await prisma.teacherAssignment.findMany({
+      where: {
+        classId,
+        schoolYearId,
+        isActive: true,
       },
+      select: { subjectId: true },
+      distinct: ["subjectId"],
+    })
+    const subjectIds = assignments.map((assignment) => assignment.subjectId)
+    const subjects = await prisma.subject.findMany({
+      where: {
+        id: { in: subjectIds },
+        isActive: true,
+      },
+      orderBy: [{ sortOrder: "asc" }, { name: "asc" }],
     })
 
     // Pobierz wszystkie oceny dla uczniów w klasie
@@ -47,6 +58,7 @@ export async function GET(
           in: students.map((s) => s.id),
         },
         schoolYearId,
+        subjectId: { in: subjectIds },
       },
       include: {
         gradeScale: true,

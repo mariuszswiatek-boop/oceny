@@ -2,6 +2,53 @@
 
 Aplikacja webowa do zarządzania ocenami śródrocznymi i rocznymi w szkole Montessori. System pozwala nauczycielom wprowadzać oceny według skali Montessori, wychowawcom przeglądać oceny całej klasy i generować PDF z kartami ocen.
 
+## Spis treści
+- [Dokumentacja](#dokumentacja)
+- [Szybki start](#szybki-start)
+- [Wymagania](#wymagania)
+- [Instalacja i uruchomienie](#instalacja-i-uruchomienie)
+- [Dane logowania (seed)](#dane-logowania-seed)
+- [Role i uprawnienia](#role-i-uprawnienia)
+- [Struktura API](#struktura-api)
+- [Model danych](#model-danych)
+- [Bezpieczeństwo](#bezpieczenstwo)
+- [Funkcjonalności](#funkcjonalnosci)
+- [Rozwój](#rozwoj)
+- [Struktura projektu](#struktura-projektu)
+- [Jak zweryfikować](#jak-zweryfikowac)
+
+## Dokumentacja
+- Portal dokumentacji: `docs/index.md`
+- Uruchomienie lokalne: `docs/development.md`
+- Konfiguracja: `docs/configuration.md`
+- Architektura: `docs/architecture.md`
+- API: `docs/api.md`
+- CI/CD i deploy: `docs/cicd.md`, `docs/deploy.md`
+- Operacje: `docs/runbook.md`, `docs/troubleshooting.md`
+- Bezpieczeństwo: `docs/security.md`
+
+## Szybki start
+Najprostsza ścieżka lokalna (DB w Dockerze):
+```bash
+docker compose up -d postgres
+npm install
+```
+
+Utwórz `.env`:
+```env
+DATABASE_URL="postgresql://postgres:postgres@localhost:5433/oceny"
+NEXTAUTH_URL="http://localhost:3000"
+NEXTAUTH_SECRET="change-this-local-secret"
+```
+
+```bash
+npx prisma migrate dev
+npm run db:seed
+npm run dev
+```
+
+Pełne instrukcje: `docs/development.md`.
+
 ## Technologie
 
 - **Frontend/Backend**: Next.js 16 (App Router) + TypeScript
@@ -92,7 +139,7 @@ Po uruchomieniu seed, możesz zalogować się używając następujących kont:
 
 ### Wychowawca
 - **Email**: `wychowawca@szkola.pl`
-Ż- **Hasło**: `password123`
+- **Hasło**: `password123`
 - **Rola**: HOMEROOM
 
 ### Nauczyciel 1
@@ -124,7 +171,7 @@ Po uruchomieniu seed, możesz zalogować się używając następujących kont:
 
 ### HOMEROOM
 - Widzi całą swoją klasę (uczniów)
-- Widzi oceny ze wszystkich przedmiotów dla swojej klasy
+- Widzi tylko te przedmioty, które są przypisane do klasy w danym roku szkolnym
 - Może generować PDF dla uczniów w swojej klasie (pojedynczy lub cała klasa)
 
 ### READONLY (opcjonalnie)
@@ -189,7 +236,8 @@ Po uruchomieniu seed, możesz zalogować się używając następujących kont:
 
 ### Wychowawca
 - Wybór klasy (swojej)
-- Tabela: uczniowie w wierszach, przedmioty w kolumnach, w komórkach ocena (kolor) dla semestru i końca roku
+- Tabela: uczniowie w wierszach, przedmioty w kolumnach (tylko przypisane do klasy w danym roku)
+- Komórki: ocena (kolor) dla semestru i końca roku
 - Generowanie PDF:
   - Dla jednego ucznia
   - Masowo: dla całej klasy (ZIP z osobnymi plikami lub jeden wielostronicowy PDF)
@@ -199,7 +247,6 @@ Po uruchomieniu seed, możesz zalogować się używając następujących kont:
 - Nagłówek: "ROK SZKOLNY" i sekcje "OCENY ŚRÓDROCZNE" oraz "OCENY ROCZNE"
 - Pola: HOMEROOM, IMIĘ I NAZWISKO UCZNIA, KLASA
 - Tabela z przedmiotami i kolumnami ocen (zaznaczenie kółkiem w odpowiednim kolorze)
-- Kolumna "Podpis nauczyciela"
 
 ## Rozwój
 
@@ -221,6 +268,10 @@ Po uruchomieniu seed, możesz zalogować się używając następujących kont:
 /lib            # Utility functions
 /prisma         # Schemat Prisma i seed
 ```
+
+## Jak zweryfikować
+- Otwórz `docs/index.md` i przejdź przez „Szybki start”.
+- Uruchom `npm run dev` i sprawdź logowanie przez `/login`.
 
 ## Uwagi
 

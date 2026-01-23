@@ -55,19 +55,35 @@ export async function GET(
       return NextResponse.json({ error: "Class not found" }, { status: 404 })
     }
 
-    const [subjects, gradeScales, grades] = await Promise.all([
-      prisma.subject.findMany({
-        where: { isActive: true },
-        orderBy: [{ sortOrder: "asc" }, { name: "asc" }],
+    const [assignments, gradeScales] = await Promise.all([
+      prisma.teacherAssignment.findMany({
+        where: {
+          classId,
+          schoolYearId,
+          isActive: true,
+        },
+        select: { subjectId: true },
+        distinct: ["subjectId"],
       }),
       prisma.montessoriGradeScale.findMany({
         where: { isActive: true },
         orderBy: { sortOrder: "asc" },
       }),
+    ])
+    const subjectIds = assignments.map((assignment) => assignment.subjectId)
+    const [subjects, grades] = await Promise.all([
+      prisma.subject.findMany({
+        where: {
+          id: { in: subjectIds },
+          isActive: true,
+        },
+        orderBy: [{ sortOrder: "asc" }, { name: "asc" }],
+      }),
       prisma.studentGrade.findMany({
         where: {
           studentId: { in: class_.students.map((student) => student.id) },
           schoolYearId,
+          subjectId: { in: subjectIds },
         },
         select: {
           studentId: true,
