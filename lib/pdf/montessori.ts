@@ -7,6 +7,8 @@ type GradeScale = {
   id: string
   label: string
   colorHex: string
+  appliesToMidyear: boolean
+  appliesToFinal: boolean
 }
 
 type Student = {
@@ -117,6 +119,15 @@ const buildGradesTable = (
   `
 }
 
+const filterGradeScalesForTerm = (
+  gradeScales: GradeScale[],
+  term: "MIDYEAR" | "FINAL"
+) => {
+  return gradeScales.filter((scale) =>
+    term === "FINAL" ? scale.appliesToFinal : scale.appliesToMidyear
+  )
+}
+
 const buildStudentSection = (
   student: Student,
   classInfo: ClassInfo,
@@ -127,6 +138,8 @@ const buildStudentSection = (
 ) => {
   const midyearGrades = grades.filter((grade) => grade.term === "MIDYEAR")
   const finalGrades = grades.filter((grade) => grade.term === "FINAL")
+  const midyearGradeScales = filterGradeScalesForTerm(gradeScales, "MIDYEAR")
+  const finalGradeScales = filterGradeScalesForTerm(gradeScales, "FINAL")
   const subtitle =
     termMode === "BOTH"
       ? "OCENY"
@@ -135,11 +148,11 @@ const buildStudentSection = (
         : "OCENY ROCZNE"
   const sections =
     termMode === "BOTH"
-      ? `${buildGradesTable("OCENY ŚRÓDROCZNE", subjects, gradeScales, midyearGrades)}
-      ${buildGradesTable("OCENY ROCZNE", subjects, gradeScales, finalGrades)}`
+      ? `${buildGradesTable("OCENY ŚRÓDROCZNE", subjects, midyearGradeScales, midyearGrades)}
+      ${buildGradesTable("OCENY ROCZNE", subjects, finalGradeScales, finalGrades)}`
       : termMode === "MIDYEAR"
-        ? buildGradesTable("OCENY ŚRÓDROCZNE", subjects, gradeScales, midyearGrades)
-        : buildGradesTable("OCENY ROCZNE", subjects, gradeScales, finalGrades)
+        ? buildGradesTable("OCENY ŚRÓDROCZNE", subjects, midyearGradeScales, midyearGrades)
+        : buildGradesTable("OCENY ROCZNE", subjects, finalGradeScales, finalGrades)
 
   return `
     <div class="page">

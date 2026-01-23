@@ -218,7 +218,7 @@ export default function WychowawcaClassPage() {
                 {subjects.map((subject) => (
                   <th
                     key={subject.id}
-                    colSpan={2}
+                    colSpan={termMode === "BOTH" ? 2 : 1}
                     className="px-6 py-3 text-center text-xs font-medium uppercase tracking-wider text-gray-500"
                   >
                     {subject.name}
@@ -232,16 +232,28 @@ export default function WychowawcaClassPage() {
                 </th>
               </tr>
               <tr>
-                {subjects.map((subject) => (
-                  <Fragment key={subject.id}>
-                    <th className="px-4 py-2 text-center text-[10px] font-medium uppercase tracking-wider text-gray-400">
-                    Śródroczna
+                {subjects.map((subject) => {
+                  if (termMode === "BOTH") {
+                    return (
+                      <Fragment key={subject.id}>
+                        <th className="px-4 py-2 text-center text-[10px] font-medium uppercase tracking-wider text-gray-400">
+                          Śródroczna
+                        </th>
+                        <th className="px-4 py-2 text-center text-[10px] font-medium uppercase tracking-wider text-gray-400">
+                          Końcoworoczna
+                        </th>
+                      </Fragment>
+                    )
+                  }
+                  return (
+                    <th
+                      key={subject.id}
+                      className="px-4 py-2 text-center text-[10px] font-medium uppercase tracking-wider text-gray-400"
+                    >
+                      {termMode === "MIDYEAR" ? "Śródroczna" : "Końcoworoczna"}
                     </th>
-                    <th className="px-4 py-2 text-center text-[10px] font-medium uppercase tracking-wider text-gray-400">
-                    Końcoworoczna
-                    </th>
-                  </Fragment>
-                ))}
+                  )
+                })}
               </tr>
             </thead>
             <tbody className="divide-y divide-gray-200 bg-white">
@@ -262,48 +274,39 @@ export default function WychowawcaClassPage() {
                         subject.id,
                         "FINAL"
                       )
+                      const renderCell = (grade: Grade | undefined) => (
+                        <td
+                          className="px-6 py-4 text-center"
+                          style={{
+                            backgroundColor: grade?.gradeScale?.colorHex
+                              ? `${grade.gradeScale.colorHex}20`
+                              : "transparent",
+                          }}
+                        >
+                          {grade?.gradeScale ? (
+                            <span
+                              className="inline-block h-6 w-6 rounded-full"
+                              style={{
+                                backgroundColor: grade.gradeScale.colorHex,
+                              }}
+                              title={grade.gradeScale.label}
+                            />
+                          ) : (
+                            <span className="text-gray-400">-</span>
+                          )}
+                        </td>
+                      )
+
+                      if (termMode === "MIDYEAR") {
+                        return <Fragment key={subject.id}>{renderCell(midyear)}</Fragment>
+                      }
+                      if (termMode === "FINAL") {
+                        return <Fragment key={subject.id}>{renderCell(final)}</Fragment>
+                      }
                       return (
                         <Fragment key={subject.id}>
-                          <td
-                            className="px-6 py-4 text-center"
-                            style={{
-                              backgroundColor: midyear?.gradeScale?.colorHex
-                                ? `${midyear.gradeScale.colorHex}20`
-                                : "transparent",
-                            }}
-                          >
-                            {midyear?.gradeScale ? (
-                              <span
-                                className="inline-block h-6 w-6 rounded-full"
-                                style={{
-                                  backgroundColor: midyear.gradeScale.colorHex,
-                                }}
-                                title={midyear.gradeScale.label}
-                              />
-                            ) : (
-                              <span className="text-gray-400">-</span>
-                            )}
-                          </td>
-                          <td
-                            className="px-6 py-4 text-center"
-                            style={{
-                              backgroundColor: final?.gradeScale?.colorHex
-                                ? `${final.gradeScale.colorHex}20`
-                                : "transparent",
-                            }}
-                          >
-                            {final?.gradeScale ? (
-                              <span
-                                className="inline-block h-6 w-6 rounded-full"
-                                style={{
-                                  backgroundColor: final.gradeScale.colorHex,
-                                }}
-                                title={final.gradeScale.label}
-                              />
-                            ) : (
-                              <span className="text-gray-400">-</span>
-                            )}
-                          </td>
+                          {renderCell(midyear)}
+                          {renderCell(final)}
                         </Fragment>
                       )
                     })}
