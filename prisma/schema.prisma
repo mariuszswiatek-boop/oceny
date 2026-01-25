@@ -38,6 +38,7 @@ model User {
   teacherAssignments TeacherAssignment[]
   classesAsTeacher   Class[]              @relation("ClassTeacher")
   studentGrades      StudentGrade[]
+  auditLogs          AuditLog[]           @relation("AuditLogActor")
 }
 
 model SchoolYear {
@@ -160,7 +161,7 @@ model AuditLog {
   success     Boolean  @default(true)
   metadata    Json?
 
-  actor User? @relation(fields: [actorId], references: [id], onDelete: SetNull)
+  actor User? @relation("AuditLogActor", fields: [actorId], references: [id], onDelete: SetNull)
 
   @@index([createdAt])
   @@index([actorId])
