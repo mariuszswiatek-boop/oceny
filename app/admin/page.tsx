@@ -101,6 +101,12 @@ export default function AdminPage() {
               Rok szkolny, klasy, przedmioty, skala ocen.
             </p>
           </Link>
+          <Link href="/admin/logs" className="rounded-lg bg-white p-6 shadow hover:shadow-md">
+            <h2 className="text-xl font-semibold text-gray-900">Logi audytu</h2>
+            <p className="mt-2 text-sm text-gray-600">
+              Zdarzenia, zmiany i historia działań.
+            </p>
+          </Link>
           <Link href="/admin/users" className="rounded-lg bg-white p-6 shadow hover:shadow-md">
             <h2 className="text-xl font-semibold text-gray-900">Użytkownicy</h2>
             <p className="mt-2 text-sm text-gray-600">

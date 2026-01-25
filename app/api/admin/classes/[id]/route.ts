@@ -2,6 +2,7 @@ import { NextResponse } from "next/server"
 import { z } from "zod"
 import { prisma } from "@/lib/prisma"
 import { requireRole } from "@/lib/permissions"
+import { getRequestMeta, logAuditEvent } from "@/lib/audit"
 
 const updateSchema = z.object({
   name: z.string().min(1).optional(),
@@ -16,12 +17,23 @@ export async function PATCH(
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    await requireRole("ADMIN")
+    const actor = await requireRole("ADMIN")
     const { id } = await params
     const data = updateSchema.parse(await request.json())
     const updated = await prisma.class.update({
       where: { id },
       data,
+    })
+    await logAuditEvent({
+      action: "admin.class.update",
+      entityType: "class",
+      entityId: updated.id,
+      entityLabel: updated.name,
+      actorId: actor.id,
+      actorEmail: actor.email,
+      actorRoles: actor.roles,
+      metadata: { fields: Object.keys(data) },
+      ...getRequestMeta(request),
     })
     return NextResponse.json(updated)
   } catch (error: any) {
@@ -36,12 +48,16 @@ export async function PATCH(
 }
 
 export async function DELETE(
-  _: Request,
+  request: Request,
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    await requireRole("ADMIN")
+    const actor = await requireRole("ADMIN")
     const { id } = await params
+    const existing = await prisma.class.findUnique({
+      where: { id },
+      select: { name: true },
+    })
     const [studentsCount, assignmentsCount] = await Promise.all([
       prisma.student.count({ where: { classId: id } }),
       prisma.teacherAssignment.count({ where: { classId: id } }),
@@ -53,6 +69,16 @@ export async function DELETE(
       )
     }
     await prisma.class.delete({ where: { id } })
+    await logAuditEvent({
+      action: "admin.class.delete",
+      entityType: "class",
+      entityId: id,
+      entityLabel: existing?.name ?? "unknown",
+      actorId: actor.id,
+      actorEmail: actor.email,
+      actorRoles: actor.roles,
+      ...getRequestMeta(request),
+    })
     return NextResponse.json({ success: true })
   } catch (error: any) {
     return NextResponse.json(

@@ -4,6 +4,7 @@ import { prisma } from "./prisma"
 import bcrypt from "bcryptjs"
 import { UserRole } from "@prisma/client"
 import { z } from "zod"
+import { getRequestMeta, logAuditEvent } from "@/lib/audit"
 
 const isAuthDebug = process.env.AUTH_DEBUG === "true"
 
@@ -18,7 +19,7 @@ export const authOptions: NextAuthConfig = {
         email: { label: "Email", type: "email" },
         password: { label: "Password", type: "password" }
       },
-      async authorize(credentials) {
+      async authorize(credentials, req) {
         const credentialsSchema = z.object({
           email: z.string().email(),
           password: z.string().min(1),
@@ -28,9 +29,19 @@ export const authOptions: NextAuthConfig = {
           if (isAuthDebug) {
             console.warn("AUTH_DEBUG invalid credentials payload")
           }
+          const meta = req ? getRequestMeta(req) : { ip: null, userAgent: null }
+          await logAuditEvent({
+            action: "auth.login",
+            entityType: "auth",
+            entityLabel: "credentials",
+            success: false,
+            metadata: { reason: "invalid_payload" },
+            ...meta,
+          })
           return null
         }
         const { email, password } = parsedCredentials.data
+        const meta = req ? getRequestMeta(req) : { ip: null, userAgent: null }
 
         const user = await prisma.user.findUnique({
           where: { email }
@@ -40,6 +51,16 @@ export const authOptions: NextAuthConfig = {
           if (isAuthDebug) {
             console.warn("AUTH_DEBUG user not found", { email })
           }
+          await logAuditEvent({
+            action: "auth.login",
+            entityType: "user",
+            entityId: null,
+            entityLabel: email,
+            actorEmail: email,
+            success: false,
+            metadata: { reason: "user_not_found" },
+            ...meta,
+          })
           return null
         }
 
@@ -49,9 +70,32 @@ export const authOptions: NextAuthConfig = {
           if (isAuthDebug) {
             console.warn("AUTH_DEBUG invalid password", { email })
           }
+          await logAuditEvent({
+            action: "auth.login",
+            entityType: "user",
+            entityId: user.id,
+            entityLabel: email,
+            actorId: user.id,
+            actorEmail: user.email,
+            actorRoles: user.roles,
+            success: false,
+            metadata: { reason: "invalid_password" },
+            ...meta,
+          })
           return null
         }
 
+        await logAuditEvent({
+          action: "auth.login",
+          entityType: "user",
+          entityId: user.id,
+          entityLabel: `${user.firstName} ${user.lastName}`,
+          actorId: user.id,
+          actorEmail: user.email,
+          actorRoles: user.roles,
+          success: true,
+          ...meta,
+        })
         return {
           id: user.id,
           email: user.email,

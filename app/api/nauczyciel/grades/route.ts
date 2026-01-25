@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server"
 import { requireRole, canTeacherAccessSubjectClass, isStudentInClass } from "@/lib/permissions"
 import { prisma } from "@/lib/prisma"
+import { getRequestMeta, logAuditEvent } from "@/lib/audit"
 import { z } from "zod"
 
 const gradeSchema = z.object({
@@ -101,6 +102,23 @@ export async function POST(request: Request) {
       },
     })
 
+    await logAuditEvent({
+      action: "teacher.grade.upsert",
+      entityType: "studentGrade",
+      entityId: grade.id,
+      entityLabel: `${grade.studentId}:${grade.subjectId}:${grade.term}`,
+      actorId: user.id,
+      actorEmail: user.email,
+      actorRoles: user.roles,
+      metadata: {
+        studentId: data.studentId,
+        subjectId: data.subjectId,
+        schoolYearId: data.schoolYearId,
+        term: data.term,
+        gradeScaleId: data.gradeScaleId,
+      },
+      ...getRequestMeta(request),
+    })
     return NextResponse.json(grade)
   } catch (error: any) {
     if (error instanceof z.ZodError) {

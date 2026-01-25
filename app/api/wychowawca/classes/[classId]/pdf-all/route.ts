@@ -4,6 +4,7 @@ import { prisma } from "@/lib/prisma"
 import JSZip from "jszip"
 import { renderPdfFromHtml } from "@/lib/pdf/playwright"
 import { buildStudentPdfHtml } from "@/lib/pdf/montessori"
+import { getRequestMeta, logAuditEvent } from "@/lib/audit"
 
 const toSafeFilename = (value: string) =>
   value
@@ -141,6 +142,17 @@ export async function GET(
       `oceny_${class_.name}_${termLabel}_${formatTimestamp(new Date())}.zip`
     )
 
+    await logAuditEvent({
+      action: "homeroom.pdf.class",
+      entityType: "classPdf",
+      entityId: class_.id,
+      entityLabel: class_.name,
+      actorId: user.id,
+      actorEmail: user.email,
+      actorRoles: user.roles,
+      metadata: { schoolYearId, termMode, studentCount: class_.students.length },
+      ...getRequestMeta(request),
+    })
     return new NextResponse(zipBlob, {
       headers: {
         "Content-Type": "application/zip",

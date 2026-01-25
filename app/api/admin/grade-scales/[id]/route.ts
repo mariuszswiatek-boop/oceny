@@ -2,6 +2,7 @@ import { NextResponse } from "next/server"
 import { z } from "zod"
 import { prisma } from "@/lib/prisma"
 import { requireRole } from "@/lib/permissions"
+import { getRequestMeta, logAuditEvent } from "@/lib/audit"
 
 const updateSchema = z.object({
   label: z.string().min(1).optional(),
@@ -17,12 +18,23 @@ export async function PATCH(
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    await requireRole("ADMIN")
+    const actor = await requireRole("ADMIN")
     const { id } = await params
     const data = updateSchema.parse(await request.json())
     const updated = await prisma.montessoriGradeScale.update({
       where: { id },
       data,
+    })
+    await logAuditEvent({
+      action: "admin.gradeScale.update",
+      entityType: "gradeScale",
+      entityId: updated.id,
+      entityLabel: updated.label,
+      actorId: actor.id,
+      actorEmail: actor.email,
+      actorRoles: actor.roles,
+      metadata: { fields: Object.keys(data) },
+      ...getRequestMeta(request),
     })
     return NextResponse.json(updated)
   } catch (error: any) {
@@ -37,12 +49,16 @@ export async function PATCH(
 }
 
 export async function DELETE(
-  _: Request,
+  request: Request,
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    await requireRole("ADMIN")
+    const actor = await requireRole("ADMIN")
     const { id } = await params
+    const existing = await prisma.montessoriGradeScale.findUnique({
+      where: { id },
+      select: { label: true },
+    })
     const gradeCount = await prisma.studentGrade.count({ where: { gradeScaleId: id } })
     if (gradeCount > 0) {
       return NextResponse.json(
@@ -51,6 +67,16 @@ export async function DELETE(
       )
     }
     await prisma.montessoriGradeScale.delete({ where: { id } })
+    await logAuditEvent({
+      action: "admin.gradeScale.delete",
+      entityType: "gradeScale",
+      entityId: id,
+      entityLabel: existing?.label ?? "unknown",
+      actorId: actor.id,
+      actorEmail: actor.email,
+      actorRoles: actor.roles,
+      ...getRequestMeta(request),
+    })
     return NextResponse.json({ success: true })
   } catch (error: any) {
     return NextResponse.json(

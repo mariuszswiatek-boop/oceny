@@ -3,6 +3,7 @@ import { z } from "zod"
 import bcrypt from "bcryptjs"
 import { prisma } from "@/lib/prisma"
 import { requireRole } from "@/lib/permissions"
+import { getRequestMeta, logAuditEvent } from "@/lib/audit"
 
 const updateSchema = z.object({
   email: z.string().email().optional(),
@@ -18,7 +19,7 @@ export async function PATCH(
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    await requireRole("ADMIN")
+    const actor = await requireRole("ADMIN")
     const { id } = await params
     const data = updateSchema.parse(await request.json())
     const update: any = { ...data }
@@ -28,6 +29,17 @@ export async function PATCH(
     const user = await prisma.user.update({
       where: { id },
       data: update,
+    })
+    await logAuditEvent({
+      action: "admin.user.update",
+      entityType: "user",
+      entityId: user.id,
+      entityLabel: `${user.firstName} ${user.lastName}`,
+      actorId: actor.id,
+      actorEmail: actor.email,
+      actorRoles: actor.roles,
+      metadata: { fields: Object.keys(data) },
+      ...getRequestMeta(request),
     })
     return NextResponse.json(user)
   } catch (error: any) {
@@ -42,12 +54,16 @@ export async function PATCH(
 }
 
 export async function DELETE(
-  _: Request,
+  request: Request,
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    await requireRole("ADMIN")
+    const actor = await requireRole("ADMIN")
     const { id } = await params
+    const existing = await prisma.user.findUnique({
+      where: { id },
+      select: { firstName: true, lastName: true, email: true },
+    })
     const [assignments, classes, grades] = await Promise.all([
       prisma.teacherAssignment.count({ where: { teacherId: id } }),
       prisma.class.count({ where: { teacherId: id } }),
@@ -60,6 +76,19 @@ export async function DELETE(
       )
     }
     await prisma.user.delete({ where: { id } })
+    await logAuditEvent({
+      action: "admin.user.delete",
+      entityType: "user",
+      entityId: id,
+      entityLabel: existing
+        ? `${existing.firstName} ${existing.lastName}`.trim()
+        : "unknown",
+      actorId: actor.id,
+      actorEmail: actor.email,
+      actorRoles: actor.roles,
+      metadata: { email: existing?.email ?? null },
+      ...getRequestMeta(request),
+    })
     return NextResponse.json({ success: true })
   } catch (error: any) {
     return NextResponse.json(

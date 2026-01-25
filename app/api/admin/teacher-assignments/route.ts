@@ -3,6 +3,7 @@ import { z } from "zod"
 import { prisma } from "@/lib/prisma"
 import { Prisma } from "@prisma/client"
 import { requireRole } from "@/lib/permissions"
+import { getRequestMeta, logAuditEvent } from "@/lib/audit"
 
 const uuidField = z.string().uuid()
 const emptyToUndefined = (value: unknown) =>
@@ -53,7 +54,7 @@ export async function GET(request: Request) {
 
 export async function POST(request: Request) {
   try {
-    await requireRole("ADMIN")
+    const actor = await requireRole("ADMIN")
     const payload = await request.json()
     const data = assignmentSchema.safeParse(payload)
     if (!data.success) {
@@ -92,6 +93,23 @@ export async function POST(request: Request) {
         schoolYearId,
         isActive: data.data.isActive ?? true,
       },
+    })
+    await logAuditEvent({
+      action: "admin.teacherAssignment.create",
+      entityType: "teacherAssignment",
+      entityId: assignment.id,
+      entityLabel: `${assignment.teacherId}:${assignment.classId}:${assignment.subjectId}`,
+      actorId: actor.id,
+      actorEmail: actor.email,
+      actorRoles: actor.roles,
+      metadata: {
+        teacherId: assignment.teacherId,
+        classId: assignment.classId,
+        subjectId: assignment.subjectId,
+        schoolYearId: assignment.schoolYearId,
+        isActive: assignment.isActive,
+      },
+      ...getRequestMeta(request),
     })
     return NextResponse.json(assignment, { status: 201 })
   } catch (error: any) {

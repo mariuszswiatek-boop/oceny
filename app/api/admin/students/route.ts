@@ -2,6 +2,7 @@ import { NextResponse } from "next/server"
 import { z } from "zod"
 import { prisma } from "@/lib/prisma"
 import { requireRole } from "@/lib/permissions"
+import { getRequestMeta, logAuditEvent } from "@/lib/audit"
 
 const studentSchema = z.object({
   firstName: z.string().trim().min(1),
@@ -31,7 +32,7 @@ export async function GET(request: Request) {
 
 export async function POST(request: Request) {
   try {
-    await requireRole("ADMIN")
+    const actor = await requireRole("ADMIN")
     const data = studentSchema.parse(await request.json())
     const student = await prisma.student.create({
       data: {
@@ -40,6 +41,17 @@ export async function POST(request: Request) {
         classId: data.classId,
         isActive: data.isActive ?? true,
       },
+    })
+    await logAuditEvent({
+      action: "admin.student.create",
+      entityType: "student",
+      entityId: student.id,
+      entityLabel: `${student.firstName} ${student.lastName}`,
+      actorId: actor.id,
+      actorEmail: actor.email,
+      actorRoles: actor.roles,
+      metadata: { classId: student.classId },
+      ...getRequestMeta(request),
     })
     return NextResponse.json(student, { status: 201 })
   } catch (error: any) {

@@ -2,6 +2,7 @@ import { NextResponse } from "next/server"
 import { z } from "zod"
 import { prisma } from "@/lib/prisma"
 import { requireRole } from "@/lib/permissions"
+import { getRequestMeta, logAuditEvent } from "@/lib/audit"
 
 const updateSchema = z.object({
   name: z.string().min(1).optional(),
@@ -18,7 +19,7 @@ export async function PATCH(
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    await requireRole("ADMIN")
+    const actor = await requireRole("ADMIN")
     const { id } = await params
     const data = updateSchema.parse(await request.json())
     const current = await prisma.schoolYear.findUnique({ where: { id } })
@@ -56,6 +57,17 @@ export async function PATCH(
       })
     }
 
+    await logAuditEvent({
+      action: "admin.schoolYear.update",
+      entityType: "schoolYear",
+      entityId: updated.id,
+      entityLabel: updated.name,
+      actorId: actor.id,
+      actorEmail: actor.email,
+      actorRoles: actor.roles,
+      metadata: { fields: Object.keys(data) },
+      ...getRequestMeta(request),
+    })
     return NextResponse.json(updated)
   } catch (error: any) {
     if (error instanceof z.ZodError) {
@@ -69,11 +81,11 @@ export async function PATCH(
 }
 
 export async function DELETE(
-  _: Request,
+  request: Request,
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    await requireRole("ADMIN")
+    const actor = await requireRole("ADMIN")
     const { id } = await params
     const schoolYear = await prisma.schoolYear.findUnique({ where: { id } })
     if (!schoolYear) {
@@ -104,6 +116,16 @@ export async function DELETE(
     }
 
     await prisma.schoolYear.delete({ where: { id } })
+    await logAuditEvent({
+      action: "admin.schoolYear.delete",
+      entityType: "schoolYear",
+      entityId: id,
+      entityLabel: schoolYear.name,
+      actorId: actor.id,
+      actorEmail: actor.email,
+      actorRoles: actor.roles,
+      ...getRequestMeta(request),
+    })
     return NextResponse.json({ success: true })
   } catch (error: any) {
     return NextResponse.json(

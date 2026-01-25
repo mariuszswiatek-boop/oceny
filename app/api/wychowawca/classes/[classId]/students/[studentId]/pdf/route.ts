@@ -2,6 +2,7 @@ import { NextResponse } from "next/server"
 import { requireRole, canTeacherAccessClassAsHomeroom, isStudentInClass } from "@/lib/permissions"
 import { prisma } from "@/lib/prisma"
 import { renderPdfFromHtml } from "@/lib/pdf/playwright"
+import { getRequestMeta, logAuditEvent } from "@/lib/audit"
 
 const toSafeFilename = (value: string) =>
   value
@@ -136,6 +137,17 @@ export async function GET(
       )}.pdf`
     )
 
+    await logAuditEvent({
+      action: "homeroom.pdf.student",
+      entityType: "studentPdf",
+      entityId: student.id,
+      entityLabel: `${student.firstName} ${student.lastName}`,
+      actorId: user.id,
+      actorEmail: user.email,
+      actorRoles: user.roles,
+      metadata: { classId, schoolYearId, termMode },
+      ...getRequestMeta(request),
+    })
     return new NextResponse(pdfBlob, {
       headers: {
         "Content-Type": "application/pdf",

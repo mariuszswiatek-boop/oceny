@@ -2,6 +2,7 @@ import { NextResponse } from "next/server"
 import { z } from "zod"
 import { prisma } from "@/lib/prisma"
 import { requireRole } from "@/lib/permissions"
+import { getRequestMeta, logAuditEvent } from "@/lib/audit"
 
 const gradeScaleSchema = z.object({
   label: z.string().min(1),
@@ -29,7 +30,7 @@ export async function GET() {
 
 export async function POST(request: Request) {
   try {
-    await requireRole("ADMIN")
+    const actor = await requireRole("ADMIN")
     const data = gradeScaleSchema.parse(await request.json())
     const scale = await prisma.montessoriGradeScale.create({
       data: {
@@ -40,6 +41,22 @@ export async function POST(request: Request) {
         appliesToMidyear: data.appliesToMidyear ?? true,
         appliesToFinal: data.appliesToFinal ?? true,
       },
+    })
+    await logAuditEvent({
+      action: "admin.gradeScale.create",
+      entityType: "gradeScale",
+      entityId: scale.id,
+      entityLabel: scale.label,
+      actorId: actor.id,
+      actorEmail: actor.email,
+      actorRoles: actor.roles,
+      metadata: {
+        sortOrder: scale.sortOrder,
+        isActive: scale.isActive,
+        appliesToMidyear: scale.appliesToMidyear,
+        appliesToFinal: scale.appliesToFinal,
+      },
+      ...getRequestMeta(request),
     })
     return NextResponse.json(scale, { status: 201 })
   } catch (error: any) {

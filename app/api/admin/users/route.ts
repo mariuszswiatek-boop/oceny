@@ -3,6 +3,7 @@ import { z } from "zod"
 import bcrypt from "bcryptjs"
 import { prisma } from "@/lib/prisma"
 import { requireRole } from "@/lib/permissions"
+import { getRequestMeta, logAuditEvent } from "@/lib/audit"
 
 const userSchema = z.object({
   email: z.string().email(),
@@ -30,7 +31,7 @@ export async function GET() {
 
 export async function POST(request: Request) {
   try {
-    await requireRole("ADMIN")
+    const actor = await requireRole("ADMIN")
     const data = userSchema.parse(await request.json())
     const passwordHash = await bcrypt.hash(data.password, 10)
     const user = await prisma.user.create({
@@ -42,6 +43,17 @@ export async function POST(request: Request) {
         roles: data.roles,
         isActive: data.isActive ?? true,
       },
+    })
+    await logAuditEvent({
+      action: "admin.user.create",
+      entityType: "user",
+      entityId: user.id,
+      entityLabel: `${user.firstName} ${user.lastName}`,
+      actorId: actor.id,
+      actorEmail: actor.email,
+      actorRoles: actor.roles,
+      metadata: { email: user.email, roles: user.roles },
+      ...getRequestMeta(request),
     })
     return NextResponse.json(user, { status: 201 })
   } catch (error: any) {

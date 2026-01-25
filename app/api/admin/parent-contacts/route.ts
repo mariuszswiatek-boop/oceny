@@ -2,6 +2,7 @@ import { NextResponse } from "next/server"
 import { z } from "zod"
 import { prisma } from "@/lib/prisma"
 import { requireRole } from "@/lib/permissions"
+import { getRequestMeta, logAuditEvent } from "@/lib/audit"
 
 const contactSchema = z.object({
   studentId: z.string().uuid(),
@@ -31,7 +32,7 @@ export async function GET(request: Request) {
 
 export async function POST(request: Request) {
   try {
-    await requireRole("ADMIN")
+    const actor = await requireRole("ADMIN")
     const data = contactSchema.parse(await request.json())
     const contact = await prisma.parentContact.create({
       data: {
@@ -41,6 +42,17 @@ export async function POST(request: Request) {
         phone: data.phone ?? null,
         isPrimary: data.isPrimary ?? false,
       },
+    })
+    await logAuditEvent({
+      action: "admin.parentContact.create",
+      entityType: "parentContact",
+      entityId: contact.id,
+      entityLabel: contact.email,
+      actorId: actor.id,
+      actorEmail: actor.email,
+      actorRoles: actor.roles,
+      metadata: { studentId: contact.studentId, isPrimary: contact.isPrimary },
+      ...getRequestMeta(request),
     })
     return NextResponse.json(contact, { status: 201 })
   } catch (error: any) {

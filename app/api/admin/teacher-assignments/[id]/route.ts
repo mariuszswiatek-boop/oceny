@@ -3,6 +3,7 @@ import { z } from "zod"
 import { prisma } from "@/lib/prisma"
 import { Prisma } from "@prisma/client"
 import { requireRole } from "@/lib/permissions"
+import { getRequestMeta, logAuditEvent } from "@/lib/audit"
 
 const updateSchema = z.object({
   teacherId: z.string().uuid().optional(),
@@ -17,12 +18,23 @@ export async function PATCH(
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    await requireRole("ADMIN")
+    const actor = await requireRole("ADMIN")
     const { id } = await params
     const data = updateSchema.parse(await request.json())
     const updated = await prisma.teacherAssignment.update({
       where: { id },
       data,
+    })
+    await logAuditEvent({
+      action: "admin.teacherAssignment.update",
+      entityType: "teacherAssignment",
+      entityId: updated.id,
+      entityLabel: `${updated.teacherId}:${updated.classId}:${updated.subjectId}`,
+      actorId: actor.id,
+      actorEmail: actor.email,
+      actorRoles: actor.roles,
+      metadata: { fields: Object.keys(data) },
+      ...getRequestMeta(request),
     })
     return NextResponse.json(updated)
   } catch (error: any) {
@@ -47,13 +59,30 @@ export async function PATCH(
 }
 
 export async function DELETE(
-  _: Request,
+  request: Request,
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    await requireRole("ADMIN")
+    const actor = await requireRole("ADMIN")
     const { id } = await params
+    const existing = await prisma.teacherAssignment.findUnique({
+      where: { id },
+      select: { teacherId: true, classId: true, subjectId: true, schoolYearId: true },
+    })
     await prisma.teacherAssignment.delete({ where: { id } })
+    await logAuditEvent({
+      action: "admin.teacherAssignment.delete",
+      entityType: "teacherAssignment",
+      entityId: id,
+      entityLabel: existing
+        ? `${existing.teacherId}:${existing.classId}:${existing.subjectId}`
+        : "unknown",
+      actorId: actor.id,
+      actorEmail: actor.email,
+      actorRoles: actor.roles,
+      metadata: { schoolYearId: existing?.schoolYearId ?? null },
+      ...getRequestMeta(request),
+    })
     return NextResponse.json({ success: true })
   } catch (error: any) {
     return NextResponse.json(

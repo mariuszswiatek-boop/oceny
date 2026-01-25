@@ -145,6 +145,29 @@ model TeacherAssignment {
   @@index([schoolYearId])
 }
 
+model AuditLog {
+  id          String   @id @default(uuid())
+  createdAt   DateTime @default(now())
+  actorId     String?
+  actorEmail  String?
+  actorRoles  UserRole[]
+  action      String
+  entityType  String
+  entityId    String?
+  entityLabel String?
+  ip          String?
+  userAgent   String?
+  success     Boolean  @default(true)
+  metadata    Json?
+
+  actor User? @relation(fields: [actorId], references: [id], onDelete: SetNull)
+
+  @@index([createdAt])
+  @@index([actorId])
+  @@index([entityType])
+  @@index([action])
+}
+
 model MontessoriGradeScale {
   id        String   @id @default(uuid())
   label     String   @unique // np. "NIE/SŁABO OPANOWAŁ"

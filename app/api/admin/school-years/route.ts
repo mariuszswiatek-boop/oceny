@@ -2,6 +2,7 @@ import { NextResponse } from "next/server"
 import { z } from "zod"
 import { prisma } from "@/lib/prisma"
 import { requireRole } from "@/lib/permissions"
+import { getRequestMeta, logAuditEvent } from "@/lib/audit"
 
 const schoolYearSchema = z.object({
   name: z.string().min(1),
@@ -30,7 +31,7 @@ export async function GET() {
 
 export async function POST(request: Request) {
   try {
-    await requireRole("ADMIN")
+    const actor = await requireRole("ADMIN")
     const payload = schoolYearSchema.parse(await request.json())
     const activeCount = await prisma.schoolYear.count({ where: { isActive: true } })
     const shouldBeActive = payload.isActive ?? activeCount === 0
@@ -54,6 +55,21 @@ export async function POST(request: Request) {
       })
     }
 
+    await logAuditEvent({
+      action: "admin.schoolYear.create",
+      entityType: "schoolYear",
+      entityId: created.id,
+      entityLabel: created.name,
+      actorId: actor.id,
+      actorEmail: actor.email,
+      actorRoles: actor.roles,
+      metadata: {
+        isActive: created.isActive,
+        gradingTerm: created.gradingTerm,
+        isGradingOpen: created.isGradingOpen,
+      },
+      ...getRequestMeta(request),
+    })
     return NextResponse.json(created, { status: 201 })
   } catch (error: any) {
     if (error instanceof z.ZodError) {
