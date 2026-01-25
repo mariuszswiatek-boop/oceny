@@ -89,6 +89,9 @@ export default function AdminAssignmentsPage() {
     classIds: [] as string[],
     mode: "assign" as "assign" | "clear",
   })
+  const [listQuery, setListQuery] = useState("")
+  const [listGroupBy, setListGroupBy] = useState<"teacher" | "class" | "year" | "none">("teacher")
+  const [listSortBy, setListSortBy] = useState<"teacher" | "class" | "year" | "subject">("teacher")
 
   useEffect(() => {
     if (status === "unauthenticated") {
@@ -170,6 +173,60 @@ export default function AdminAssignmentsPage() {
     }
     return Array.from(map.values())
   }
+
+  const assignmentGroups = useMemo(() => groupAssignments(assignments), [assignments])
+
+  const visibleGroups = useMemo(() => {
+    const query = listQuery.trim().toLocaleLowerCase()
+    const filtered = query
+      ? assignmentGroups.filter((group) => {
+          const teacher = `${group.teacher.firstName} ${group.teacher.lastName}`.toLocaleLowerCase()
+          const className = group.class.name.toLocaleLowerCase()
+          const yearName = group.schoolYear.name.toLocaleLowerCase()
+          const subjectNames = group.subjects.map((s) => s.name.toLocaleLowerCase()).join(" ")
+          return [teacher, className, yearName, subjectNames].some((value) => value.includes(query))
+        })
+      : assignmentGroups
+
+    const sorted = [...filtered].sort((a, b) => {
+      const teacherA = `${a.teacher.lastName} ${a.teacher.firstName}`
+      const teacherB = `${b.teacher.lastName} ${b.teacher.firstName}`
+      const classA = a.class.name
+      const classB = b.class.name
+      const yearA = a.schoolYear.name
+      const yearB = b.schoolYear.name
+      const subjectA = a.subjects.map((s) => s.name).sort().join(", ")
+      const subjectB = b.subjects.map((s) => s.name).sort().join(", ")
+      if (listSortBy === "teacher") return teacherA.localeCompare(teacherB)
+      if (listSortBy === "class") return classA.localeCompare(classB)
+      if (listSortBy === "year") return yearA.localeCompare(yearB)
+      return subjectA.localeCompare(subjectB)
+    })
+
+    const grouped = new Map<string, { label: string; items: AssignmentGroup[] }>()
+    for (const group of sorted) {
+      let key = "all"
+      let label = "Wszystkie przypisania"
+      if (listGroupBy === "teacher") {
+        key = group.teacherId
+        label = `${group.teacher.firstName} ${group.teacher.lastName}`
+      } else if (listGroupBy === "class") {
+        key = `${group.classId}|${group.schoolYearId}`
+        label = `${group.class.name} (${group.schoolYear.name})`
+      } else if (listGroupBy === "year") {
+        key = group.schoolYearId
+        label = group.schoolYear.name
+      }
+      const bucket = grouped.get(key)
+      if (bucket) {
+        bucket.items.push(group)
+      } else {
+        grouped.set(key, { label, items: [group] })
+      }
+    }
+
+    return Array.from(grouped.values()).sort((a, b) => a.label.localeCompare(b.label))
+  }, [assignmentGroups, listQuery, listGroupBy, listSortBy])
 
   const loadAll = async () => {
     setLoading(true)
@@ -689,7 +746,37 @@ export default function AdminAssignmentsPage() {
         </section>
 
         <section className="rounded-lg bg-white p-6 shadow">
+          <div className="flex flex-wrap items-center justify-between gap-3">
             <h2 className="text-xl font-semibold text-slate-900">Lista przypisań</h2>
+            <div className="flex flex-wrap gap-2">
+              <input
+                className={fieldClass}
+                placeholder="Szukaj (nauczyciel, klasa, rok, przedmiot)"
+                value={listQuery}
+                onChange={(e) => setListQuery(e.target.value)}
+              />
+              <select
+                className={fieldClass}
+                value={listGroupBy}
+                onChange={(e) => setListGroupBy(e.target.value as typeof listGroupBy)}
+              >
+                <option value="teacher">Grupuj: Nauczyciel</option>
+                <option value="class">Grupuj: Klasa</option>
+                <option value="year">Grupuj: Rok</option>
+                <option value="none">Bez grupowania</option>
+              </select>
+              <select
+                className={fieldClass}
+                value={listSortBy}
+                onChange={(e) => setListSortBy(e.target.value as typeof listSortBy)}
+              >
+                <option value="teacher">Sortuj: Nauczyciel</option>
+                <option value="class">Sortuj: Klasa</option>
+                <option value="year">Sortuj: Rok</option>
+                <option value="subject">Sortuj: Przedmiot</option>
+              </select>
+            </div>
+          </div>
           <div className="mt-4 overflow-x-auto">
             <table className="w-full text-sm">
               <thead>
@@ -703,93 +790,111 @@ export default function AdminAssignmentsPage() {
                 </tr>
               </thead>
               <tbody className="text-slate-900">
-                {groupAssignments(assignments).map((group) => (
-                  <tr key={group.key} className="border-t">
-                    <td className="py-2 text-slate-900">
-                      {group.teacher.firstName} {group.teacher.lastName}
-                    </td>
-                    <td className="text-slate-900">
-                      {group.schoolYear.name}
-                    </td>
-                    <td className="text-slate-900">
-                      {group.class.name}
-                    </td>
-                    <td className="text-slate-900">
-                      {editingGroups[group.key] ? (
-                        <div className="grid max-h-40 gap-1 overflow-y-auto rounded border border-gray-300 bg-white px-2 py-2 text-sm">
-                          {subjects.map((subject) => (
-                            <label key={subject.id} className="flex items-center gap-2">
-                              <input
-                                type="checkbox"
-                                checked={(editedGroups[group.key]?.subjectIds ?? []).includes(
-                                  subject.id
-                                )}
-                                onChange={(e) => {
-                                  const current = editedGroups[group.key]?.subjectIds ?? []
-                                  const next = e.target.checked
-                                    ? Array.from(new Set([...current, subject.id]))
-                                    : current.filter((id) => id !== subject.id)
-                                  updateEditedGroup(group.key, { subjectIds: next })
-                                }}
-                              />
-                              {subject.name}
-                            </label>
-                          ))}
-                        </div>
-                      ) : (
-                        group.subjects.map((s) => s.name).join(", ")
-                      )}
-                    </td>
-                    <td>
-                      {editingGroups[group.key] ? (
-                        <label className="flex items-center gap-2 text-sm text-gray-700">
-                          <input
-                            type="checkbox"
-                            checked={editedGroups[group.key]?.isActive ?? group.isActive}
-                            onChange={(e) =>
-                              updateEditedGroup(group.key, { isActive: e.target.checked })
+                {visibleGroups.flatMap((section) => {
+                  const rows = section.items.map((group) => (
+                    <tr key={group.key} className="border-t">
+                      <td className="py-2 text-slate-900">
+                        {group.teacher.firstName} {group.teacher.lastName}
+                      </td>
+                      <td className="text-slate-900">
+                        {group.schoolYear.name}
+                      </td>
+                      <td className="text-slate-900">
+                        {group.class.name}
+                      </td>
+                      <td className="text-slate-900">
+                        {editingGroups[group.key] ? (
+                          <div className="grid max-h-40 gap-1 overflow-y-auto rounded border border-gray-300 bg-white px-2 py-2 text-sm">
+                            {subjects.map((subject) => (
+                              <label key={subject.id} className="flex items-center gap-2">
+                                <input
+                                  type="checkbox"
+                                  checked={(editedGroups[group.key]?.subjectIds ?? []).includes(
+                                    subject.id
+                                  )}
+                                  onChange={(e) => {
+                                    const current = editedGroups[group.key]?.subjectIds ?? []
+                                    const next = e.target.checked
+                                      ? Array.from(new Set([...current, subject.id]))
+                                      : current.filter((id) => id !== subject.id)
+                                    updateEditedGroup(group.key, { subjectIds: next })
+                                  }}
+                                />
+                                {subject.name}
+                              </label>
+                            ))}
+                          </div>
+                        ) : (
+                          group.subjects
+                            .map((s) => s.name)
+                            .sort((a, b) => a.localeCompare(b))
+                            .join(", ")
+                        )}
+                      </td>
+                      <td>
+                        {editingGroups[group.key] ? (
+                          <label className="flex items-center gap-2 text-sm text-gray-700">
+                            <input
+                              type="checkbox"
+                              checked={editedGroups[group.key]?.isActive ?? group.isActive}
+                              onChange={(e) =>
+                                updateEditedGroup(group.key, { isActive: e.target.checked })
+                              }
+                            />
+                            {editedGroups[group.key]?.isActive ?? group.isActive
+                              ? "Aktywne"
+                              : "Archiwalne"}
+                          </label>
+                        ) : (
+                          <span className={group.isActive ? "text-green-600" : "text-gray-500"}>
+                            {group.isActive ? "Aktywne" : "Archiwalne"}
+                          </span>
+                        )}
+                      </td>
+                      <td className="flex gap-2 py-2">
+                        {editingGroups[group.key] ? (
+                          <>
+                            <button
+                              className="rounded border px-2 py-1 text-xs"
+                              onClick={() => handleSaveGroup(group)}
+                            >
+                              Zapisz
+                            </button>
+                            <button
+                              className="rounded border px-2 py-1 text-xs"
+                              onClick={() => handleCancelGroup(group)}
+                            >
+                              Anuluj
+                            </button>
+                          </>
+                        ) : (
+                          <button
+                            className="rounded border px-2 py-1 text-xs"
+                            onClick={() =>
+                              setEditingGroups((prev) => ({ ...prev, [group.key]: true }))
                             }
-                          />
-                          {editedGroups[group.key]?.isActive ?? group.isActive
-                            ? "Aktywne"
-                            : "Archiwalne"}
-                        </label>
-                      ) : (
-                        <span className={group.isActive ? "text-green-600" : "text-gray-500"}>
-                          {group.isActive ? "Aktywne" : "Archiwalne"}
-                        </span>
-                      )}
-                    </td>
-                    <td className="flex gap-2 py-2">
-                      {editingGroups[group.key] ? (
-                        <>
-                          <button
-                            className="rounded border px-2 py-1 text-xs"
-                            onClick={() => handleSaveGroup(group)}
                           >
-                            Zapisz
+                            Edytuj
                           </button>
-                          <button
-                            className="rounded border px-2 py-1 text-xs"
-                            onClick={() => handleCancelGroup(group)}
-                          >
-                            Anuluj
-                          </button>
-                        </>
-                      ) : (
-                        <button
-                          className="rounded border px-2 py-1 text-xs"
-                          onClick={() =>
-                            setEditingGroups((prev) => ({ ...prev, [group.key]: true }))
-                          }
-                        >
-                          Edytuj
-                        </button>
-                      )}
-                    </td>
-                  </tr>
-                ))}
-                {assignments.length === 0 && (
+                        )}
+                      </td>
+                    </tr>
+                  ))
+
+                  if (listGroupBy === "none") {
+                    return rows
+                  }
+
+                  return [
+                    <tr key={`${section.label}-header`} className="bg-slate-50">
+                      <td colSpan={6} className="py-2 text-sm font-semibold text-slate-700">
+                        {section.label}
+                      </td>
+                    </tr>,
+                    ...rows,
+                  ]
+                })}
+                {visibleGroups.length === 0 && (
                   <tr>
                     <td className="py-3 text-gray-500" colSpan={6}>
                       Brak danych
