@@ -362,6 +362,7 @@ export default function AdminAssignmentsPage() {
   const handleDelete = async (id: string) => {
     if (!confirm("Na pewno usunąć przypisanie?")) return
     setError(null)
+    const scrollY = window.scrollY
     const res = await fetch(`/api/admin/teacher-assignments/${id}`, { method: "DELETE" })
     if (!res.ok) {
       const data = await res.json().catch(() => ({}))
@@ -369,6 +370,9 @@ export default function AdminAssignmentsPage() {
       return
     }
     await loadAll()
+    requestAnimationFrame(() => {
+      window.scrollTo({ top: scrollY, behavior: "instant" as ScrollBehavior })
+    })
   }
 
   const handleSaveGroup = async (group: AssignmentGroup) => {
