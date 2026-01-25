@@ -1,5 +1,5 @@
 import { prisma } from "@/lib/prisma"
-import { UserRole } from "@prisma/client"
+import { type Prisma, UserRole } from "@prisma/client"
 
 type AuditLogInput = {
   action: string
@@ -12,12 +12,12 @@ type AuditLogInput = {
   ip?: string | null
   userAgent?: string | null
   success?: boolean
-  metadata?: unknown
+  metadata?: Prisma.InputJsonValue | null
 }
 
 const REDACT_KEYS = /password|secret|token/i
 
-const sanitizeMetadata = (value: unknown, depth = 0): unknown => {
+const sanitizeMetadata = (value: unknown, depth = 0): Prisma.InputJsonValue => {
   if (depth > 6) return "[REDACTED_DEPTH]"
   if (value === null || value === undefined) return value
   if (typeof value === "string" || typeof value === "number" || typeof value === "boolean") {
@@ -25,7 +25,7 @@ const sanitizeMetadata = (value: unknown, depth = 0): unknown => {
   }
   if (typeof value === "bigint") return value.toString()
   if (Array.isArray(value)) {
-    return value.map((item) => sanitizeMetadata(item, depth + 1))
+    return value.map((item) => sanitizeMetadata(item, depth + 1)) as Prisma.InputJsonValue
   }
   if (typeof value === "object") {
     const result: Record<string, unknown> = {}
@@ -36,7 +36,7 @@ const sanitizeMetadata = (value: unknown, depth = 0): unknown => {
         result[key] = sanitizeMetadata(val, depth + 1)
       }
     }
-    return result
+    return result as Prisma.InputJsonValue
   }
   return String(value)
 }
