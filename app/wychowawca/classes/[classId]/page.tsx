@@ -43,7 +43,7 @@ export default function WychowawcaClassPage() {
   const [gradeScales, setGradeScales] = useState<GradeScale[]>([])
   const [grades, setGrades] = useState<Grade[]>([])
   const [schoolYearId, setSchoolYearId] = useState<string>("")
-  const [termMode, setTermMode] = useState<"MIDYEAR" | "FINAL" | "BOTH">("BOTH")
+  const [termMode, setTermMode] = useState<"MIDYEAR" | "FINAL" | "BOTH">("MIDYEAR")
   const [loading, setLoading] = useState(true)
   const [generatingPdf, setGeneratingPdf] = useState<string | null>(null)
 
@@ -69,6 +69,7 @@ export default function WychowawcaClassPage() {
       if (res.ok) {
         const year = await res.json()
         setSchoolYearId(year.id)
+        setTermMode(year.gradingTerm === "FINAL" ? "FINAL" : "MIDYEAR")
         fetchData(year.id)
       }
     } catch (error) {
