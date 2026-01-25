@@ -19,7 +19,7 @@ const REDACT_KEYS = /password|secret|token/i
 
 const sanitizeMetadata = (value: unknown, depth = 0): Prisma.InputJsonValue => {
   if (depth > 6) return "[REDACTED_DEPTH]"
-  if (value === null || value === undefined) return value
+  if (value === null || value === undefined) return null
   if (typeof value === "string" || typeof value === "number" || typeof value === "boolean") {
     return value
   }
