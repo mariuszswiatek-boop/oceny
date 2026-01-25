@@ -71,11 +71,17 @@ export async function POST(request: Request) {
 
     let schoolYearId = data.data.schoolYearId
     if (!schoolYearId) {
-      const activeYear = await prisma.schoolYear.findFirst({ where: { isActive: true } })
-      if (!activeYear) {
+      const activeYears = await prisma.schoolYear.findMany({ where: { isActive: true } })
+      if (activeYears.length === 0) {
         return NextResponse.json({ error: "No active school year found" }, { status: 400 })
       }
-      schoolYearId = activeYear.id
+      if (activeYears.length > 1) {
+        return NextResponse.json(
+          { error: "Multiple active school years found. Choose a school year explicitly." },
+          { status: 400 }
+        )
+      }
+      schoolYearId = activeYears[0].id
     }
 
     const assignment = await prisma.teacherAssignment.create({
@@ -90,6 +96,13 @@ export async function POST(request: Request) {
     return NextResponse.json(assignment, { status: 201 })
   } catch (error: any) {
     if (error instanceof Prisma.PrismaClientKnownRequestError && error.code === "P2002") {
+      const target = (error.meta?.target ?? []) as string[]
+      if (target.includes("subjectId") && target.includes("classId") && target.includes("schoolYearId")) {
+        return NextResponse.json(
+          { error: "Przedmiot jest już przypisany do tej klasy w tym roku." },
+          { status: 409 }
+        )
+      }
       return NextResponse.json({ error: "Przypisanie już istnieje" }, { status: 409 })
     }
     return NextResponse.json(

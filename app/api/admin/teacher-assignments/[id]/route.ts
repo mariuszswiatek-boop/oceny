@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server"
 import { z } from "zod"
 import { prisma } from "@/lib/prisma"
+import { Prisma } from "@prisma/client"
 import { requireRole } from "@/lib/permissions"
 
 const updateSchema = z.object({
@@ -27,6 +28,16 @@ export async function PATCH(
   } catch (error: any) {
     if (error instanceof z.ZodError) {
       return NextResponse.json({ error: "Invalid input", details: error.issues }, { status: 400 })
+    }
+    if (error instanceof Prisma.PrismaClientKnownRequestError && error.code === "P2002") {
+      const target = (error.meta?.target ?? []) as string[]
+      if (target.includes("subjectId") && target.includes("classId") && target.includes("schoolYearId")) {
+        return NextResponse.json(
+          { error: "Przedmiot jest już przypisany do tej klasy w tym roku." },
+          { status: 409 }
+        )
+      }
+      return NextResponse.json({ error: "Przypisanie już istnieje" }, { status: 409 })
     }
     return NextResponse.json(
       { error: error.message || "Internal server error" },

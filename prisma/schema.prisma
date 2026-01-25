@@ -138,6 +138,7 @@ model TeacherAssignment {
   schoolYear SchoolYear @relation(fields: [schoolYearId], references: [id], onDelete: Cascade)
 
   @@unique([teacherId, subjectId, classId, schoolYearId])
+  @@unique([subjectId, classId, schoolYearId])
   @@index([teacherId])
   @@index([classId])
   @@index([subjectId])
