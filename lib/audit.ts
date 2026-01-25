@@ -1,6 +1,8 @@
 import { prisma } from "@/lib/prisma"
 import { type Prisma, UserRole } from "@prisma/client"
 
+type JsonInput = Prisma.InputJsonValue | Prisma.NullTypes.JsonNull
+
 type AuditLogInput = {
   action: string
   entityType: string
@@ -17,15 +19,15 @@ type AuditLogInput = {
 
 const REDACT_KEYS = /password|secret|token/i
 
-const sanitizeMetadata = (value: unknown, depth = 0): Prisma.InputJsonValue => {
+const sanitizeMetadata = (value: unknown, depth = 0): JsonInput => {
   if (depth > 6) return "[REDACTED_DEPTH]"
-  if (value === null || value === undefined) return null
+  if (value === null || value === undefined) return Prisma.JsonNull
   if (typeof value === "string" || typeof value === "number" || typeof value === "boolean") {
     return value
   }
   if (typeof value === "bigint") return value.toString()
   if (Array.isArray(value)) {
-    return value.map((item) => sanitizeMetadata(item, depth + 1)) as Prisma.InputJsonValue
+    return value.map((item) => sanitizeMetadata(item, depth + 1)) as JsonInput
   }
   if (typeof value === "object") {
     const result: Record<string, unknown> = {}
@@ -36,7 +38,7 @@ const sanitizeMetadata = (value: unknown, depth = 0): Prisma.InputJsonValue => {
         result[key] = sanitizeMetadata(val, depth + 1)
       }
     }
-    return result as Prisma.InputJsonValue
+    return result as JsonInput
   }
   return String(value)
 }
@@ -63,7 +65,12 @@ export const logAuditEvent = async (input: AuditLogInput) => {
         ip: input.ip ?? null,
         userAgent: input.userAgent ?? null,
         success: input.success ?? true,
-        metadata: input.metadata ? sanitizeMetadata(input.metadata) : undefined,
+        metadata:
+          input.metadata === null
+            ? Prisma.JsonNull
+            : input.metadata
+              ? sanitizeMetadata(input.metadata)
+              : undefined,
       },
     })
   } catch {
