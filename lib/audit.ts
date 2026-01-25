@@ -1,5 +1,5 @@
 import { prisma } from "@/lib/prisma"
-import { type Prisma, UserRole } from "@prisma/client"
+import { Prisma, UserRole } from "@prisma/client"
 
 type JsonInput = Prisma.InputJsonValue | Prisma.NullTypes.JsonNull
 
