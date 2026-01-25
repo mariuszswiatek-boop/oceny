@@ -6,8 +6,11 @@ import { renderPdfFromHtml } from "@/lib/pdf/playwright"
 const toSafeFilename = (value: string) =>
   value
     .trim()
-    .replace(/[\\/?%*:|"<>]/g, "")
-    .replace(/\s+/g, "_")
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .replace(/[^A-Za-z0-9._-]/g, "_")
+    .replace(/_+/g, "_")
+    .replace(/^_+|_+$/g, "")
 import { buildStudentPdfHtml } from "@/lib/pdf/montessori"
 
 const formatTimestamp = (date: Date) => {

@@ -8,8 +8,11 @@ import { buildStudentPdfHtml } from "@/lib/pdf/montessori"
 const toSafeFilename = (value: string) =>
   value
     .trim()
-    .replace(/[\\/?%*:|"<>]/g, "")
-    .replace(/\s+/g, "_")
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .replace(/[^A-Za-z0-9._-]/g, "_")
+    .replace(/_+/g, "_")
+    .replace(/^_+|_+$/g, "")
 
 const formatTimestamp = (date: Date) => {
   const pad = (value: number) => value.toString().padStart(2, "0")
