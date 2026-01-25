@@ -825,10 +825,26 @@ export default function AdminAssignmentsPage() {
                             ))}
                           </div>
                         ) : (
-                          group.subjects
-                            .map((s) => s.name)
-                            .sort((a, b) => a.localeCompare(b))
-                            .join(", ")
+                          <div className="flex flex-wrap gap-2">
+                            {group.subjects
+                              .slice()
+                              .sort((a, b) => a.name.localeCompare(b.name))
+                              .map((subject) => (
+                                <span
+                                  key={subject.assignmentId}
+                                  className="inline-flex items-center gap-1 rounded-full border border-slate-200 px-2 py-0.5 text-xs text-slate-700"
+                                >
+                                  {subject.name}
+                                  <button
+                                    className="rounded-full px-1 text-red-600 hover:bg-red-50"
+                                    onClick={() => handleDelete(subject.assignmentId)}
+                                    title="Usuń przypisanie"
+                                  >
+                                    ×
+                                  </button>
+                                </span>
+                              ))}
+                          </div>
                         )}
                       </td>
                       <td>
