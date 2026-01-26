@@ -168,6 +168,25 @@ export default function AdminStudentsPage() {
     await loadAll()
   }
 
+  const handleClearGrades = async (student: Student) => {
+    if (!confirm("To usunie wszystkie oceny ucznia. Kontynuować?")) return
+    const typed = prompt(
+      `Wpisz nazwisko "${student.lastName}" aby potwierdzić czyszczenie ocen.`
+    )
+    if (!typed || typed.trim().toLowerCase() !== student.lastName.trim().toLowerCase()) {
+      setError("Niepoprawne nazwisko. Czyszczenie ocen anulowane.")
+      return
+    }
+    setError(null)
+    const res = await fetch(`/api/admin/students/${student.id}/clear-grades`, { method: "POST" })
+    if (!res.ok) {
+      const data = await res.json().catch(() => ({}))
+      setError(data.error || "Nie udało się wyczyścić ocen")
+      return
+    }
+    await loadAll()
+  }
+
   const handleCreateContact = async () => {
     if (!selectedStudent) return
     setError(null)
@@ -492,6 +511,12 @@ export default function AdminStudentsPage() {
                         onClick={() => handleUpdateStudent(student.id, { isActive: !student.isActive })}
                       >
                         {student.isActive ? "Archiwizuj" : "Aktywuj"}
+                      </button>
+                      <button
+                        className="rounded border px-2 py-1 text-xs text-orange-700"
+                        onClick={() => handleClearGrades(student)}
+                      >
+                        Wyczyść oceny
                       </button>
                       <button
                         className="rounded border px-2 py-1 text-xs"

@@ -1,0 +1,1 @@
+-- No-op migration: placeholder to satisfy Prisma history.
