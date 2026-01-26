@@ -128,6 +128,12 @@ export default function AdminPage() {
               Lista uczniów, kontakty rodziców, archiwizacja.
             </p>
           </Link>
+          <Link href="/admin/reports" className="rounded-lg bg-white p-6 shadow hover:shadow-md">
+            <h2 className="text-xl font-semibold text-gray-900">Raporty</h2>
+            <p className="mt-2 text-sm text-gray-600">
+              Kompletność ocen, braki i statystyki.
+            </p>
+          </Link>
         </div>
       </div>
     </div>

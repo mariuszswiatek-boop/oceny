@@ -340,7 +340,7 @@ export default function AdminSettingsPage() {
           </div>
         )}
 
-        <section className="rounded-lg bg-white p-6 shadow">
+        <section id="school-years" className="rounded-lg bg-white p-6 shadow">
           <h2 className="text-xl font-semibold text-slate-900">Rok szkolny</h2>
           <div className="mt-4 grid gap-4 md:grid-cols-5">
             <input
@@ -557,7 +557,7 @@ export default function AdminSettingsPage() {
           </div>
         </section>
 
-        <section className="rounded-lg bg-white p-6 shadow">
+        <section id="subjects" className="rounded-lg bg-white p-6 shadow">
           <h2 className="text-xl font-semibold text-slate-900">Przedmioty</h2>
           <div className="mt-4 grid gap-4 md:grid-cols-4">
             <input
@@ -709,7 +709,7 @@ export default function AdminSettingsPage() {
           </div>
         </section>
 
-        <section className="rounded-lg bg-white p-6 shadow">
+        <section id="grade-scales" className="rounded-lg bg-white p-6 shadow">
           <h2 className="text-xl font-semibold text-slate-900">Skala Montessori</h2>
           <div className="mt-4 grid gap-4 md:grid-cols-6">
             <input
@@ -950,7 +950,7 @@ export default function AdminSettingsPage() {
           </div>
         </section>
 
-        <section className="rounded-lg bg-white p-6 shadow">
+        <section id="classes" className="rounded-lg bg-white p-6 shadow">
           <h2 className="text-xl font-semibold text-slate-900">Klasy</h2>
           <div className="mt-4 grid gap-4 md:grid-cols-5">
             <input
