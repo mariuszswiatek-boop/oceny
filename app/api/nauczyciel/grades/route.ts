@@ -77,6 +77,21 @@ export async function POST(request: Request) {
       }
     }
 
+    const subject = await prisma.subject.findUnique({
+      where: { id: data.subjectId },
+      select: { name: true },
+    })
+    if (!subject) {
+      return NextResponse.json({ error: "Subject not found" }, { status: 404 })
+    }
+
+    const gradeScaleLabel = data.gradeScaleId
+      ? await prisma.montessoriGradeScale.findUnique({
+          where: { id: data.gradeScaleId },
+          select: { label: true },
+        })
+      : null
+
     // Zapisz lub zaktualizuj ocenę
     const grade = await prisma.studentGrade.upsert({
       where: {
@@ -102,11 +117,16 @@ export async function POST(request: Request) {
       },
     })
 
+    const studentLabel = `${student.lastName} ${student.firstName}`
+    const entityLabel = `${studentLabel} | ${student.class.name} | ${subject.name} | ${data.term} | ${
+      gradeScaleLabel?.label ?? "BRAK"
+    }`
+
     await logAuditEvent({
       action: "teacher.grade.upsert",
       entityType: "studentGrade",
       entityId: grade.id,
-      entityLabel: `${grade.studentId}:${grade.subjectId}:${grade.term}`,
+      entityLabel,
       actorId: user.id,
       actorEmail: user.email,
       actorRoles: user.roles,
@@ -116,6 +136,10 @@ export async function POST(request: Request) {
         schoolYearId: data.schoolYearId,
         term: data.term,
         gradeScaleId: data.gradeScaleId,
+        studentLabel,
+        className: student.class.name,
+        subjectName: subject.name,
+        gradeScaleLabel: gradeScaleLabel?.label ?? null,
       },
       ...getRequestMeta(request),
     })
