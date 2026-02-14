@@ -24,6 +24,42 @@ type AuditLog = {
 const fieldClass =
   "w-full rounded border border-gray-300 bg-white px-3 py-2 text-sm text-slate-900 placeholder:text-slate-400 focus:border-blue-500 focus:outline-none"
 
+const ACTION_LABELS: Record<string, string> = {
+  "auth.login": "Logowanie",
+  "auth.logout": "Wylogowanie",
+  "teacher.grade.upsert": "Zapis/aktualizacja oceny",
+  "admin.user.create": "Dodanie użytkownika",
+  "admin.user.update": "Edycja użytkownika",
+  "admin.user.delete": "Usunięcie użytkownika",
+  "admin.subject.create": "Dodanie przedmiotu",
+  "admin.subject.update": "Edycja przedmiotu",
+  "admin.subject.delete": "Usunięcie przedmiotu",
+  "admin.class.create": "Dodanie klasy",
+  "admin.class.update": "Edycja klasy",
+  "admin.class.delete": "Usunięcie klasy",
+  "admin.student.create": "Dodanie ucznia",
+  "admin.student.update": "Edycja ucznia",
+  "admin.student.delete": "Usunięcie ucznia",
+  "admin.student.clear_grades": "Wyczyszczenie ocen ucznia",
+  "admin.teacherAssignment.create": "Przypisanie nauczyciela",
+  "admin.teacherAssignment.update": "Edycja przypisania nauczyciela",
+  "admin.teacherAssignment.delete": "Usunięcie przypisania nauczyciela",
+  "admin.gradeScale.create": "Dodanie skali ocen",
+  "admin.gradeScale.update": "Edycja skali ocen",
+  "admin.gradeScale.delete": "Usunięcie skali ocen",
+  "admin.schoolYear.create": "Dodanie roku szkolnego",
+  "admin.schoolYear.update": "Edycja roku szkolnego",
+  "admin.schoolYear.delete": "Usunięcie roku szkolnego",
+  "admin.parentContact.create": "Dodanie kontaktu rodzica",
+  "admin.parentContact.update": "Edycja kontaktu rodzica",
+  "admin.parentContact.delete": "Usunięcie kontaktu rodzica",
+  "admin.studentGrades.clear": "Wyczyszczenie ocen ucznia",
+  "homeroom.pdf.student": "PDF ucznia (wychowawca)",
+  "homeroom.pdf.all": "PDF całej klasy (wychowawca)",
+}
+
+const getActionLabel = (action: string) => ACTION_LABELS[action] ?? action
+
 export default function AdminLogsPage() {
   const { data: session, status } = useSession()
   const router = useRouter()
@@ -240,7 +276,12 @@ export default function AdminLogsPage() {
                     <td>
                       {log.actorEmail || log.actorId || "-"}
                     </td>
-                    <td>{log.action}</td>
+                    <td>
+                      <div>{getActionLabel(log.action)}</div>
+                      {getActionLabel(log.action) !== log.action && (
+                        <div className="text-xs text-slate-500">{log.action}</div>
+                      )}
+                    </td>
                     <td>
                       <div className="text-xs text-slate-500">{log.entityType}</div>
                       <div>{log.entityLabel || log.entityId || "-"}</div>
